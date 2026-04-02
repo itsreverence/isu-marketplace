@@ -11,13 +11,11 @@ public abstract class DatabaseHandler {
         try {
             this.connection = DriverManager.getConnection("jbdc:sqlite:" + this.databaseName + ".db");
             createTable();
-            seedTable();
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
     public abstract void createTable();
-    public abstract void seedTable();
     
 }

@@ -16,20 +16,8 @@ public class UserHandler extends DatabaseHandler {
         try {
             Statement statement = this.connection.createStatement();
             statement.setQueryTimeout(30);
-            statement.executeUpdate("drop table if exists users");
+            statement.executeUpdate("drop table if exists user");
             statement.executeUpdate("create table user (id string, username string, passwordHash string)");
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public void seedTable() {
-        try {
-            Statement statement = this.connection.createStatement();
-            statement.setQueryTimeout(30);
-            statement.executeUpdate("insert into user values (" + UUID.randomUUID() + ", 'user1', '" + BCrypt.hashpw("password", BCrypt.gensalt()) + "')");
-            statement.executeUpdate("insert into user values (" + UUID.randomUUID() + ", 'user2', '" + BCrypt.hashpw("password", BCrypt.gensalt()) + "')");
         } catch (SQLException e) {
             e.printStackTrace();
         }
