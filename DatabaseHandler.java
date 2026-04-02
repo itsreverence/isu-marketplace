@@ -9,7 +9,7 @@ public abstract class DatabaseHandler {
     public DatabaseHandler(String databaseName) {
         this.databaseName = databaseName;
         try {
-            this.connection = DriverManager.getConnection("jbdc:sqlite:" + this.databaseName + ".db");
+            this.connection = DriverManager.getConnection("jdbc:sqlite:" + this.databaseName + ".db");
             createTable();
         } catch (SQLException e) {
             e.printStackTrace();
