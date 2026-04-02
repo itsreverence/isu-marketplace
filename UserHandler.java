@@ -1,3 +1,4 @@
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -26,11 +27,15 @@ public class UserHandler extends DatabaseHandler {
     public User register(String username, String password) {
         User user = null;
         try {
-            Statement statement = this.connection.createStatement();
-            statement.setQueryTimeout(30);
-            String passwordHash = BCrypt.hashpw(password, BCrypt.gensalt());
+            String query = "INSERT INTO user (id, username, passwordHash) VALUES (?, ?, ?)";
             UUID id = UUID.randomUUID();
-            statement.executeUpdate("insert into user values (" + id.toString() + ", '" + username + "', '" + passwordHash + "')");
+            String passwordHash = BCrypt.hashpw(password, BCrypt.gensalt());
+            PreparedStatement preparedStatement = this.connection.prepareStatement(query);
+            preparedStatement.setString(1, id.toString());
+            preparedStatement.setString(2, username);
+            preparedStatement.setString(3, passwordHash);
+            preparedStatement.setQueryTimeout(30);
+            preparedStatement.executeUpdate();
             user = new User(id, username, passwordHash);
         } catch (SQLException e) {
             e.printStackTrace();
@@ -41,9 +46,11 @@ public class UserHandler extends DatabaseHandler {
     public User login(String username, String password) {
         User user = null;
         try {
-            Statement statement = this.connection.createStatement();
-            statement.setQueryTimeout(30);
-            ResultSet resultSet = statement.executeQuery("select * from user where username = '" + username + "'");
+            String query = "SELECT * FROM user WHERE username = ?";
+            PreparedStatement preparedStatement = this.connection.prepareStatement(query);
+            preparedStatement.setString(1, username);
+            preparedStatement.setQueryTimeout(30);
+            ResultSet resultSet = preparedStatement.executeQuery();
             if (resultSet.next()) {
                 String passwordHash = resultSet.getString("passwordHash");
                 if (BCrypt.checkpw(password, passwordHash)) {

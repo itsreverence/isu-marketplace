@@ -76,6 +76,7 @@ public class InputController {
                 returnValue = true;
                 break;
             case 3:
+                browseListings(listingHandler);
                 returnValue = true;
                 break;
             case 4:
@@ -111,5 +112,16 @@ public class InputController {
         listingHandler.createListing(user, title, description, price);
         System.out.println("Your listing has been published to the marketplace.");
         scanner.close();
+    }
+
+    private void browseListings(ListingHandler listingHandler) {
+        List<Listing> listings = listingHandler.getListings();
+        for (Listing listing : listings) {
+            System.out.println("ID: " + listing.getId());
+            System.out.println("Title: " + listing.getTitle());
+            System.out.println("Description: " + listing.getDescription());
+            System.out.println("Price: " + listing.getPrice());
+            System.out.println("");
+        }
     }
  }
