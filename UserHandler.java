@@ -17,7 +17,6 @@ public class UserHandler extends DatabaseHandler {
         try {
             Statement statement = this.connection.createStatement();
             statement.setQueryTimeout(30);
-            statement.executeUpdate("drop table if exists user");
             statement.executeUpdate("create table user (id string, username string, passwordHash string)");
         } catch (SQLException e) {
             e.printStackTrace();

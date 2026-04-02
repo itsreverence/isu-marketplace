@@ -113,7 +113,6 @@ public class InputController {
         String description = scanner.nextLine();
         System.out.print("Enter the price of the listing: ");
         float price = scanner.nextFloat();
-        scanner.nextLine();
         listingHandler.createListing(user, title, description, price);
         System.out.println("Your listing has been published to the marketplace.");
         scanner.close();
