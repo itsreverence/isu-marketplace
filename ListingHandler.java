@@ -87,4 +87,38 @@ public class ListingHandler extends DatabaseHandler {
         }
         return listings;
     }
+
+    public void buyListing(Listing listing) {
+        UUID listingId = listing.getId();
+        try {
+            String query = "DELETE FROM listing WHERE id = ?";
+            PreparedStatement preparedStatement = this.connection.prepareStatement(query);
+            preparedStatement.setString(1, listingId.toString());
+            preparedStatement.setQueryTimeout(30);
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public Listing getListing(UUID listingId) {
+        Listing listing = null;
+        try {
+            String query = "SELECT * FROM listing WHERE id = ?";
+            PreparedStatement preparedStatement = this.connection.prepareStatement(query);
+            preparedStatement.setString(1, listingId.toString());
+            preparedStatement.setQueryTimeout(30);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            if (resultSet.next()) {
+                UUID userId = UUID.fromString(resultSet.getString("userId"));
+                String title = resultSet.getString("title");
+                String description = resultSet.getString("description");
+                float price = resultSet.getFloat("price");
+                listing = new Listing(listingId, userId, title, description, price);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return listing;
+    }
 }

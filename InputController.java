@@ -1,5 +1,6 @@
 import java.util.List;
 import java.util.Scanner;
+import java.util.UUID;
 
 import org.mindrot.jbcrypt.BCrypt;
 
@@ -60,7 +61,8 @@ public class InputController {
         System.out.println("1.) Your Listings");
         System.out.println("2.) New Listing");
         System.out.println("3.) Browse Listings");
-        System.out.println("4.) Exit");
+        System.out.println("4.) Buy Listing");
+        System.out.println("5.) Exit");
 
         Scanner scanner = new Scanner(System.in);
         System.out.println("Select an option: ");
@@ -80,9 +82,12 @@ public class InputController {
                 returnValue = true;
                 break;
             case 4:
+                returnValue = true;
+                break;
+            case 5:
                 break;
             default:
-                System.out.println("Please enter a valid choice between 1 and 4.");
+                System.out.println("Please enter a valid choice between 1 and 5.");
         }
 
         scanner.close();
@@ -123,5 +128,14 @@ public class InputController {
             System.out.println("Price: " + listing.getPrice());
             System.out.println("");
         }
+    }
+
+    private void buyListing(ListingHandler listingHandler) {
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Enter the ID of the listing you want to buy: ");
+        String listingId = scanner.nextLine();
+        Listing listing = listingHandler.getListing(UUID.fromString(listingId));
+        listingHandler.buyListing(listing);
+        System.out.println("The specified listing has been purchased.");
     }
  }
