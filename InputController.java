@@ -96,7 +96,7 @@ public class InputController {
             case 6:
                 break;
             default:
-                System.out.println("Please enter a valid choice between 1 and 5.");
+                System.out.println("Please enter a valid choice between 1 and 6.");
         }
 
         scanner.close();
