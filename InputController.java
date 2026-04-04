@@ -1,3 +1,6 @@
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.util.List;
 import java.util.Scanner;
 import java.util.UUID;
@@ -13,8 +16,8 @@ public class InputController {
 
     public User loginOrRegister(UserHandler userHandler) {
         User user = null;
-        System.out.println("1. Login");
-        System.out.println("2. Register");
+        System.out.println("1.) Login");
+        System.out.println("2.) Register");
         System.out.print("Enter your choice: ");
         int choice = Integer.parseInt(scanner.nextLine());
         switch (choice) {
@@ -62,7 +65,8 @@ public class InputController {
         System.out.println("2.) New Listing");
         System.out.println("3.) Browse Listings");
         System.out.println("4.) Buy Listing");
-        System.out.println("5.) Exit");
+        System.out.println("5.) Help");
+        System.out.println("6.) Exit");
 
         Scanner scanner = new Scanner(System.in);
         System.out.println("Select an option: ");
@@ -82,9 +86,14 @@ public class InputController {
                 returnValue = true;
                 break;
             case 4:
+                buyListing(listingHandler);
                 returnValue = true;
                 break;
             case 5:
+                help("mainMenu");
+                returnValue = true;
+                break;
+            case 6:
                 break;
             default:
                 System.out.println("Please enter a valid choice between 1 and 5.");
@@ -136,5 +145,20 @@ public class InputController {
         Listing listing = listingHandler.getListing(UUID.fromString(listingId));
         listingHandler.buyListing(listing);
         System.out.println("The specified listing has been purchased.");
+    }
+
+    private void help(String fileName) {
+        try {
+            String filePath = "docs/" + fileName + ".txt";
+            File file = new File(filePath);
+            Scanner fileScanner = new Scanner(file);
+            while (fileScanner.hasNextLine()) {
+                String line = fileScanner.nextLine();
+                System.out.println(line);
+            }
+            fileScanner.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
     }
  }
