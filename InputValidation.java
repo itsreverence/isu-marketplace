@@ -18,7 +18,7 @@ public class InputValidation {
      * @param failedString The prompt the user is given for inputting a bad string.
      * @return A correctly formatted string.
      */
-    public static String string(String askingArgument, String failedString) {
+    public static String readString(String askingArgument, String failedString) {
         String stringResult = null;
         boolean invalidInput = true;
         while (invalidInput) {
@@ -43,7 +43,7 @@ public class InputValidation {
      * @param maxVal The largest value some arbitrary menu should accept.
      * @return A correctly formatted integer.
      */
-    public static int integer(String askingArgument, String failedString, int maxVal) {
+    public static int readInt(String askingArgument, String failedString, int maxVal) {
         int choice = 0; // automatically out of range
         boolean invalidInput = true;
         while (invalidInput) {
@@ -64,5 +64,26 @@ public class InputValidation {
             }
         }
         return choice;
+    }
+
+    public static float readFloat(String askingArgument, String failedString) {
+        float floatResult = 0.0f;
+        boolean invalidInput = true;
+        while (invalidInput) {
+            try {
+                floatResult = SCANNER.nextFloat();
+                if (floatResult > 0) {
+                    System.out.println(failedString);
+                } else {
+                    invalidInput = false;
+                }
+            } catch (InputMismatchException e) {
+                // log here -->
+                System.out.println(failedString);
+            } finally {
+                SCANNER.nextLine(); // consume
+            }
+        }
+        return floatResult;
     }
 }
