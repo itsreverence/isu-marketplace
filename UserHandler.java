@@ -1,9 +1,14 @@
+import java.io.File;
+import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLTimeoutException;
 import java.sql.Statement;
 import java.util.UUID;
+import java.util.logging.FileHandler;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 import org.mindrot.jbcrypt.BCrypt;
 
@@ -20,6 +25,24 @@ public class UserHandler extends DatabaseHandler {
             statement.setQueryTimeout(30);
             statement.executeUpdate("create table if not exists user (id string, username string, passwordHash string)");
         } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void initLogger(Logger logger) {
+        try {
+            logger = Logger.getLogger("UserLogger");
+            File logDirectory = new File("./logs/");
+            if (!logDirectory.exists()) {
+                logDirectory.mkdirs();
+            }
+            FileHandler fileHandler = new FileHandler("./logs/UserLogger.log");
+            SimpleFormatter simpleFormatter = new SimpleFormatter();
+            fileHandler.setFormatter(simpleFormatter);
+            logger.addHandler(fileHandler);
+            logger.setUseParentHandlers(false);
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }

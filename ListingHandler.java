@@ -1,3 +1,5 @@
+import java.io.File;
+import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -5,6 +7,9 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.logging.FileHandler;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 
 public class ListingHandler extends DatabaseHandler {
@@ -20,6 +25,24 @@ public class ListingHandler extends DatabaseHandler {
             statement.setQueryTimeout(30);
             statement.executeUpdate("create table if not exists listing (id string, userId string, title string, description string, price float)");
         } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void initLogger(Logger logger) {
+        try {
+            logger = Logger.getLogger("ListingLogger");
+            File logDirectory = new File("./logs/");
+            if (!logDirectory.exists()) {
+                logDirectory.mkdirs();
+            }
+            FileHandler fileHandler = new FileHandler("./logs/ListingLogger.log");
+            SimpleFormatter simpleFormatter = new SimpleFormatter();
+            fileHandler.setFormatter(simpleFormatter);
+            logger.addHandler(fileHandler);
+            logger.setUseParentHandlers(false);
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
