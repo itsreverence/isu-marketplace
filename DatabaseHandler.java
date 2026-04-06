@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.logging.Logger;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -12,6 +13,7 @@ import org.json.simple.parser.ParseException;
 public abstract class DatabaseHandler {
     protected Connection connection;
     private String databaseName;
+    private Logger logger;
 
     public DatabaseHandler(String databaseName) {
         this.databaseName = databaseName;
@@ -19,6 +21,7 @@ public abstract class DatabaseHandler {
             this.connection = DriverManager.getConnection("jdbc:sqlite:" + this.databaseName + ".db");
             dropTables();
             createTable();
+            initLogger(this.logger);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -49,5 +52,6 @@ public abstract class DatabaseHandler {
     }
 
     public abstract void createTable();
+    public abstract void initLogger(Logger logger);
     
 }
