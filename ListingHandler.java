@@ -18,7 +18,7 @@ public class ListingHandler extends DatabaseHandler {
         try {
             Statement statement = this.connection.createStatement();
             statement.setQueryTimeout(30);
-            statement.executeUpdate("if not exists (create table listing (id string, userId string, title string, description string, price float))");
+            statement.executeUpdate("create table if not exists listing (id string, userId string, title string, description string, price float)");
         } catch (SQLException e) {
             e.printStackTrace();
         }
