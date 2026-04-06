@@ -50,6 +50,14 @@ public class UserHandler extends DatabaseHandler {
     public User register(String username, String password) {
         User user = null;
         try {
+            String checkUsernameQuery = "SELECT * FROM user WHERE username = ?";
+            PreparedStatement checkUsernamePreparedStatement = this.connection.prepareStatement(checkUsernameQuery);
+            checkUsernamePreparedStatement.setString(1, username);
+            checkUsernamePreparedStatement.setQueryTimeout(30);
+            ResultSet checkUsernameResultSet = checkUsernamePreparedStatement.executeQuery();
+            if (checkUsernameResultSet.next()) {
+                throw new SQLException("Username already exists");
+            }
             String query = "INSERT INTO user (id, username, passwordHash) VALUES (?, ?, ?)";
             UUID id = UUID.randomUUID();
             String passwordHash = BCrypt.hashpw(password, BCrypt.gensalt());
