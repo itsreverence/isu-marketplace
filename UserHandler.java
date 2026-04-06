@@ -1,6 +1,7 @@
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLTimeoutException;
 import java.sql.Statement;
 import java.util.UUID;
 
@@ -56,10 +57,13 @@ public class UserHandler extends DatabaseHandler {
                     UUID id = UUID.fromString(resultSet.getString("id"));
                     user = new User(id, username, passwordHash);
                 }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
+            } 
+        } catch (SQLTimeoutException e1) {
+            System.out.println("Invalid login.");
+        } catch (SQLException e2) {
+            e2.printStackTrace();
         }
+        // instantiated user: logged in! null, failed
         return user;
     }
 }

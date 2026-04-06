@@ -40,7 +40,12 @@ public class InputController {
             System.out.print("Enter your password: ");
             String password = scanner.nextLine();
             user = userHandler.login(username, password);
+            // if .login returns null, login failed.
+            if (user == null) {
+                System.out.println("Invalid login.\n");
+            }
         }
+        // logged in
         System.out.println("Welcome back, " + user.getUsername() + "!");
         return user;
     }
