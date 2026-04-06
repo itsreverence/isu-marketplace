@@ -7,18 +7,27 @@ import java.util.UUID;
 import org.mindrot.jbcrypt.BCrypt;
 
 public class InputController {
-    private Scanner scanner;
+    private static final String INPUT_PROMPT = "Enter your choice: ";
+    private static final String USERNAME_PROMPT = "Enter your username: ";
+    private static final String PASSWORD_PROMPT = "Enter your password: ";
+    
+    private static final String LISTING_TITLE_PROMPT = "Enter the title of the listing: ";
+    private static final String LISTING_DESC_PROMPT = "Enter the description of the listing: ";
+    private static final String LISTING_PRICE_PROMPT = "Enter the price of the listing: ";
 
-    public InputController() {
-        scanner = new Scanner(System.in);
-    }
+    private static final String BUY_LISTING_PROMPT = "Enter the ID of the listing you want to buy: ";
+
+    private static final String INVALID_PROMPT = "Invalid operation, please try again.";
+
+    public InputController() {} // default constructor
 
     public User loginOrRegister(UserHandler userHandler) {
         User user = null;
         System.out.println("1.) Login");
         System.out.println("2.) Register");
-        System.out.print("Enter your choice: ");
-        int choice = Integer.parseInt(scanner.nextLine());
+        System.out.println("3.) Quit");
+        int choice = InputValidation.readInt(INPUT_PROMPT, INVALID_PROMPT, 3);
+
         switch (choice) {
             case 1:
                 user = login(userHandler);
@@ -26,23 +35,24 @@ public class InputController {
             case 2:
                 user = register(userHandler);
                 break;
-            default:
-                System.out.println("Please enter a valid choice between 1 and 2.");
+            case 3:
+                // i hope this is acceptable
+                System.exit(0);
         }
+        // no default needed as readInt ensures we are in the range
         return user;
     }
 
     private User login(UserHandler userHandler) {
         User user = null;
         while (user == null) {
-            System.out.print("Enter your username: ");
-            String username = scanner.nextLine();
-            System.out.print("Enter your password: ");
-            String password = scanner.nextLine();
+            String username = InputValidation.readString(USERNAME_PROMPT, INVALID_PROMPT);
+            String password = InputValidation.readString(PASSWORD_PROMPT, INVALID_PROMPT);
             user = userHandler.login(username, password);
             // if .login returns null, login failed.
             if (user == null) {
-                System.out.println("Invalid login.\n");
+                // encapsulate login operation via the same prompt
+                System.out.println(INVALID_PROMPT);
             }
         }
         // logged in
@@ -53,12 +63,11 @@ public class InputController {
     private User register(UserHandler userHandler) {
         User user = null;
         while (user == null) {
-            System.out.print("Enter your username: ");
-            String username = scanner.nextLine();
-            System.out.print("Enter your password: ");
-            String password = scanner.nextLine();
-            String passwordHash = BCrypt.hashpw(password, BCrypt.gensalt());
+            String username = InputValidation.readString(USERNAME_PROMPT, INVALID_PROMPT);
+            String password = InputValidation.readString(PASSWORD_PROMPT, INVALID_PROMPT);
+            String passwordHash = BCrypt.hashpw(password, BCrypt.gensalt()); // password hash via bcrypt
             user = userHandler.register(username, passwordHash);
+            // TODO: we should also handle the case where user is null (if .register() fails)
         }
         System.out.println("Welcome, " + user.getUsername() + "!");
         return user;
@@ -72,10 +81,9 @@ public class InputController {
         System.out.println("5.) Help");
         System.out.println("6.) Exit");
 
-        Scanner scanner = new Scanner(System.in);
-        System.out.println("Select an option: ");
-        int choice = Integer.parseInt(scanner.nextLine());
+        int choice = InputValidation.readInt(INPUT_PROMPT, INVALID_PROMPT, 6);
         boolean returnValue = false;
+
         switch (choice) {
             case 1:
                 userListings(user, listingHandler);
@@ -98,14 +106,10 @@ public class InputController {
                 returnValue = true;
                 break;
             case 6:
-                break;
-            default:
-                System.out.println("Please enter a valid choice between 1 and 6.");
+                // again, i hope this is okay
+                System.exit(0); 
         }
-
-        scanner.close();
         return returnValue;
-
     }
 
     private void userListings(User user, ListingHandler listingHandler) {
@@ -119,16 +123,13 @@ public class InputController {
     }
 
     private void newListing(User user, ListingHandler listingHandler) {
-        Scanner scanner = new Scanner(System.in);
-        System.out.print("Enter the title of the listing: ");
-        String title = scanner.nextLine();
-        System.out.print("Enter the description of the listing: ");
-        String description = scanner.nextLine();
-        System.out.print("Enter the price of the listing: ");
-        float price = scanner.nextFloat();
+        String title = InputValidation.readString(LISTING_TITLE_PROMPT, INVALID_PROMPT);
+        String description = InputValidation.readString(LISTING_DESC_PROMPT, INVALID_PROMPT);
+        float price = InputValidation.readFloat(LISTING_PRICE_PROMPT, INVALID_PROMPT);
+
+        // create listing with validated input
         listingHandler.createListing(user, title, description, price);
         System.out.println("Your listing has been published to the marketplace.");
-        scanner.close();
     }
 
     private void browseListings(ListingHandler listingHandler) {
@@ -143,10 +144,9 @@ public class InputController {
     }
 
     private void buyListing(ListingHandler listingHandler) {
-        Scanner scanner = new Scanner(System.in);
-        System.out.print("Enter the ID of the listing you want to buy: ");
-        String listingId = scanner.nextLine();
+        String listingId = InputValidation.readString(BUY_LISTING_PROMPT, INVALID_PROMPT);
         Listing listing = listingHandler.getListing(UUID.fromString(listingId));
+        // TODO: Ensure the listing is validated
         listingHandler.buyListing(listing);
         System.out.println("The specified listing has been purchased.");
     }
