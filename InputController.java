@@ -1,5 +1,6 @@
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Scanner;
 import java.util.UUID;
@@ -16,6 +17,11 @@ public class InputController {
     private static final String LISTING_PRICE_PROMPT = "Enter the price of the listing: ";
 
     private static final String BUY_LISTING_PROMPT = "Enter the ID of the listing you want to buy: ";
+
+    private static final String UPDATE_USER_ROLE_USERNAME_PROMPT = "Enter the username of the user: ";
+    private static final String UPDATE_USER_ROLE_PROMPT = "Enter the role of the user: ";
+
+    private static final String DELETE_USER_USERNAME_PROMPT = "Enter the username of the user: ";
 
     private static final String INVALID_PROMPT = "Invalid operation, please try again.";
 
@@ -73,15 +79,60 @@ public class InputController {
         return user;
     }
 
-    public boolean mainMenu(User user, ListingHandler listingHandler) {
+    public boolean mainMenu(User user, ListingHandler listingHandler, UserHandler userHandler) throws SQLException {
+        if (user.getRole() == Role.ADMIN) {
+            return adminMenu(user, listingHandler, userHandler);
+        } else {
+            System.out.println("1.) Your Listings");
+            System.out.println("2.) New Listing");
+            System.out.println("3.) Browse Listings");
+            System.out.println("4.) Buy Listing");
+            System.out.println("5.) Help");
+            System.out.println("6.) Exit");
+
+            int choice = InputValidation.readInt(INPUT_PROMPT, INVALID_PROMPT, 6);
+            boolean returnValue = false;
+
+            switch (choice) {
+                case 1:
+                    userListings(user, listingHandler);
+                    returnValue = true;
+                    break;
+                case 2:
+                    newListing(user, listingHandler);
+                    returnValue = true;
+                    break;
+                case 3:
+                    browseListings(listingHandler);
+                    returnValue = true;
+                    break;
+                case 4:
+                    buyListing(listingHandler);
+                    returnValue = true;
+                    break;
+                case 5:
+                    help("mainMenu");
+                    returnValue = true;
+                    break;
+                case 6:
+                    // again, i hope this is okay
+                    System.exit(0); 
+            }
+            return returnValue;
+        }
+        
+    }
+
+    public boolean adminMenu(User user, ListingHandler listingHandler, UserHandler userHandler) throws SQLException {
         System.out.println("1.) Your Listings");
         System.out.println("2.) New Listing");
         System.out.println("3.) Browse Listings");
         System.out.println("4.) Buy Listing");
-        System.out.println("5.) Help");
-        System.out.println("6.) Exit");
+        System.out.println("5.) Manage Users");
+        System.out.println("6.) Help");
+        System.out.println("7.) Exit");
 
-        int choice = InputValidation.readInt(INPUT_PROMPT, INVALID_PROMPT, 6);
+        int choice = InputValidation.readInt(INPUT_PROMPT, INVALID_PROMPT, 7);
         boolean returnValue = false;
 
         switch (choice) {
@@ -102,14 +153,77 @@ public class InputController {
                 returnValue = true;
                 break;
             case 5:
-                help("mainMenu");
+                manageUsers(userHandler);
                 returnValue = true;
                 break;
             case 6:
+                help("adminMenu");
+                returnValue = true;
+                break;
+            case 7:
                 // again, i hope this is okay
                 System.exit(0); 
         }
         return returnValue;
+    }
+
+    private void manageUsers(UserHandler userHandler) throws SQLException {
+        System.out.println("1.) View Users");
+        System.out.println("2.) Update User Role");
+        System.out.println("3.) Delete User");
+        System.out.println("4.) Help");
+        System.out.println("5.) Exit");
+
+        int choice = InputValidation.readInt(INPUT_PROMPT, INVALID_PROMPT, 5);
+
+        switch (choice) {
+            case 1:
+                viewUsers(userHandler);
+                break;
+            case 2:
+                updateUserRole(userHandler);
+                break;
+            case 3:
+                deleteUser(userHandler);
+                break;
+            case 4:
+                help("manageUsers");
+                manageUsers(userHandler);
+                break;
+            case 5:
+                // again, i hope this is okay
+                System.exit(0); 
+        }
+    }
+
+    private void viewUsers(UserHandler userHandler) {
+        List<User> users = userHandler.getUsers();
+        for (User user : users) {
+            System.out.println("ID: " + user.getId());
+            System.out.println("Username: " + user.getUsername());
+            System.out.println("Role: " + user.getRole());
+            System.out.println("");
+        }
+    }
+
+    private void updateUserRole(UserHandler userHandler) throws SQLException {
+        String username = InputValidation.readString(UPDATE_USER_ROLE_USERNAME_PROMPT, INVALID_PROMPT);
+        System.out.println("1.) Member");
+        System.out.println("2.) Admin");
+        int choice = InputValidation.readInt(UPDATE_USER_ROLE_PROMPT, INVALID_PROMPT, 2);
+        switch (choice) {
+            case 1:
+                userHandler.updateUserRole(username, Role.MEMBER);
+                break;
+            case 2:
+                userHandler.updateUserRole(username, Role.ADMIN);
+                break;
+        }
+    }
+
+    private void deleteUser(UserHandler userHandler) throws SQLException {
+        String username = InputValidation.readString(DELETE_USER_USERNAME_PROMPT, INVALID_PROMPT);
+        userHandler.deleteUser(username);
     }
 
     private void userListings(User user, ListingHandler listingHandler) {

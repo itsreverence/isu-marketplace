@@ -5,6 +5,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLTimeoutException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
@@ -23,7 +25,7 @@ public class UserHandler extends DatabaseHandler {
         try {
             Statement statement = this.connection.createStatement();
             statement.setQueryTimeout(30);
-            statement.executeUpdate("create table if not exists user (id string, username string, passwordHash string)");
+            statement.executeUpdate("create table if not exists user (id string, username string, passwordHash string, role string)");
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -67,7 +69,7 @@ public class UserHandler extends DatabaseHandler {
             preparedStatement.setString(3, passwordHash);
             preparedStatement.setQueryTimeout(30);
             preparedStatement.executeUpdate();
-            user = new User(id, username, passwordHash);
+            user = new User(id, username, passwordHash, Role.MEMBER);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -86,7 +88,8 @@ public class UserHandler extends DatabaseHandler {
                 String passwordHash = resultSet.getString("passwordHash");
                 if (BCrypt.checkpw(password, passwordHash)) {
                     UUID id = UUID.fromString(resultSet.getString("id"));
-                    user = new User(id, username, passwordHash);
+                    Role role = Role.valueOf(resultSet.getString("role"));
+                    user = new User(id, username, passwordHash, role);
                 }
             } 
         } catch (SQLTimeoutException e1) {
@@ -96,5 +99,83 @@ public class UserHandler extends DatabaseHandler {
         }
         // instantiated user: logged in! null, failed
         return user;
+    }
+
+    public List<User> getUsers() {
+        List<User> users = new ArrayList<>();
+        try {
+            String query = "SELECT * FROM user";
+            PreparedStatement preparedStatement = this.connection.prepareStatement(query);
+            preparedStatement.setQueryTimeout(30);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                UUID id = UUID.fromString(resultSet.getString("id"));
+                String username = resultSet.getString("username");
+                String passwordHash = resultSet.getString("passwordHash");
+                Role role = Role.valueOf(resultSet.getString("role"));
+                users.add(new User(id, username, passwordHash, role));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return users;
+    }
+
+    public User getUser(String username) {
+        User user = null;
+        try {
+            String query = "SELECT * FROM user WHERE username = ?";
+            PreparedStatement preparedStatement = this.connection.prepareStatement(query);
+            preparedStatement.setString(1, username);
+            preparedStatement.setQueryTimeout(30);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            if (resultSet.next()) {
+                UUID id = UUID.fromString(resultSet.getString("id"));
+                String passwordHash = resultSet.getString("passwordHash");
+                Role role = Role.valueOf(resultSet.getString("role"));
+                user = new User(id, username, passwordHash, role);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return user;
+    }
+
+    public void updateUserRole(String username, Role role) throws SQLException {
+        User user = getUser(username);
+        if (user == null) {
+            throw new SQLException("User not found");
+        }
+        try {
+            String query = "UPDATE user SET role = ? WHERE username = ?";
+            PreparedStatement preparedStatement = this.connection.prepareStatement(query);
+            preparedStatement.setString(1, role.toString());
+            preparedStatement.setString(2, username);
+            preparedStatement.setQueryTimeout(30);
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void deleteUser(String username) throws SQLException {
+        User user = getUser(username);
+        if (user == null) {
+            throw new SQLException("User not found");
+        }
+        try {
+            String query = "DELETE FROM user WHERE username = ?";
+            PreparedStatement preparedStatement = this.connection.prepareStatement(query);
+            preparedStatement.setString(1, username);
+            preparedStatement.setQueryTimeout(30);
+            preparedStatement.executeUpdate();
+            String listingQuery = "DELETE FROM listing WHERE userId = ?";
+            PreparedStatement listingPreparedStatement = this.connection.prepareStatement(listingQuery);
+            listingPreparedStatement.setString(1, user.getId().toString());
+            listingPreparedStatement.setQueryTimeout(30);
+            listingPreparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }
