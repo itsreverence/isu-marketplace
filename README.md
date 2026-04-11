@@ -12,6 +12,9 @@ The Marketplace allows users to perform a variety of actions, such as:
 - Create a new listing on the marketplace
 - Browse all the listings other people have created
 - Buy a listing that someone else has created
+- View the information of all the users (Admin)
+- Update the role of a specified user (Admin)
+- Delete a user and their listings (Admin)
 ```
 
 ## Run the project
