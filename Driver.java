@@ -1,3 +1,5 @@
+import java.sql.SQLException;
+
 public class Driver {
     public static void main(String[] args) {
         UserHandler userHandler = new UserHandler("user");
@@ -6,7 +8,11 @@ public class Driver {
         User user = inputController.loginOrRegister(userHandler);
         boolean continueRunning = true;
         while (continueRunning) {
-            continueRunning = inputController.mainMenu(user, listingHandler);
+            try {
+                continueRunning = inputController.mainMenu(user, listingHandler, userHandler);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 }

@@ -1,0 +1,5 @@
+View Users: Displays the information of all the users of the application
+Update User Role: Collects a username and a role level which it will apply to the user
+Delete User: Deletes the user with the provided username and their listings from the database
+Help: Displays some information about each command in the current menu
+Exit: Terminates the program upon the request of the user
