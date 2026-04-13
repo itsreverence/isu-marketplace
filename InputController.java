@@ -5,7 +5,8 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.UUID;
 
-import org.mindrot.jbcrypt.BCrypt;
+import at.favre.lib.crypto.bcrypt.BCrypt;
+import at.favre.lib.bytes.Bytes;
 
 public class InputController {
     private static final String INPUT_PROMPT = "Enter your choice: ";
@@ -17,6 +18,7 @@ public class InputController {
     private static final String LISTING_PRICE_PROMPT = "Enter the price of the listing: ";
 
     private static final String BUY_LISTING_PROMPT = "Enter the ID of the listing you want to buy: ";
+    private static final String REMOVE_LISTING_PROMPT = "Enter the ID of the listing you want to remove: ";
 
     private static final String UPDATE_USER_ROLE_USERNAME_PROMPT = "Enter the username of the user: ";
     private static final String UPDATE_USER_ROLE_PROMPT = "Enter the role of the user: ";
@@ -71,8 +73,7 @@ public class InputController {
         while (user == null) {
             String username = InputValidation.readString(USERNAME_PROMPT, INVALID_PROMPT);
             String password = InputValidation.readString(PASSWORD_PROMPT, INVALID_PROMPT);
-            String passwordHash = BCrypt.hashpw(password, BCrypt.gensalt()); // password hash via bcrypt
-            user = userHandler.register(username, passwordHash);
+            user = userHandler.register(username, password);
             // TODO: we should also handle the case where user is null (if .register() fails)
         }
         System.out.println("Welcome, " + user.getUsername() + "!");
@@ -107,7 +108,7 @@ public class InputController {
                     returnValue = true;
                     break;
                 case 4:
-                    buyListing(listingHandler);
+                    buyListing(user, listingHandler);
                     returnValue = true;
                     break;
                 case 5:
@@ -149,11 +150,11 @@ public class InputController {
                 returnValue = true;
                 break;
             case 4:
-                buyListing(listingHandler);
+                buyListing(user, listingHandler);
                 returnValue = true;
                 break;
             case 5:
-                manageUsers(userHandler);
+                manageUsers(userHandler, listingHandler);
                 returnValue = true;
                 break;
             case 6:
@@ -167,7 +168,7 @@ public class InputController {
         return returnValue;
     }
 
-    private void manageUsers(UserHandler userHandler) throws SQLException {
+    private void manageUsers(UserHandler userHandler, ListingHandler listingHandler) throws SQLException {
         System.out.println("1.) View Users");
         System.out.println("2.) Update User Role");
         System.out.println("3.) Delete User");
@@ -184,11 +185,11 @@ public class InputController {
                 updateUserRole(userHandler);
                 break;
             case 3:
-                deleteUser(userHandler);
+                deleteUser(userHandler, listingHandler);
                 break;
             case 4:
                 help("manageUsers");
-                manageUsers(userHandler);
+                manageUsers(userHandler, listingHandler);
                 break;
             case 5:
                 // again, i hope this is okay
@@ -221,9 +222,10 @@ public class InputController {
         }
     }
 
-    private void deleteUser(UserHandler userHandler) throws SQLException {
+    private void deleteUser(UserHandler userHandler, ListingHandler listingHandler) throws SQLException {
         String username = InputValidation.readString(DELETE_USER_USERNAME_PROMPT, INVALID_PROMPT);
         userHandler.deleteUser(username);
+        listingHandler.deleteUserListings(username);
     }
 
     private void userListings(User user, ListingHandler listingHandler) {
@@ -257,12 +259,42 @@ public class InputController {
         }
     }
 
-    private void buyListing(ListingHandler listingHandler) {
+    private void buyListing(User user, ListingHandler listingHandler) {
         String listingId = InputValidation.readString(BUY_LISTING_PROMPT, INVALID_PROMPT);
         Listing listing = listingHandler.getListing(UUID.fromString(listingId));
-        // TODO: Ensure the listing is validated
-        listingHandler.buyListing(listing);
+        
+        // Ensure listing exists
+        if (listing == null) {
+            System.out.println("Invalid listing.");
+            return;
+        } 
+        // Ensure we are not buying our own
+        if (listing.getUserId().equals(user.getId())) {
+            System.out.println("You cannot buy your own listing.");
+            return;
+        }
+        // Finally, allow the user to purchase the listing
+        listingHandler.removeListing(listing);
         System.out.println("The specified listing has been purchased.");
+    }
+
+    private void removeListing(User user, ListingHandler listingHandler) {
+        String listingId = InputValidation.readString(REMOVE_LISTING_PROMPT, INVALID_PROMPT);
+        Listing listing = listingHandler.getListing(UUID.fromString(listingId));
+
+        // Ensure listing exists
+        if (listing == null) {
+            System.out.println("Invalid listing.");
+            return;
+        }
+        // Ensure we are deleting our own
+        if (!listing.getUserId().equals(user.getId())) {
+            // TODO: Consider a statement for not revealing the listing id exists
+            System.out.println("Invalid listing.");
+            return;
+        }
+        listingHandler.removeListing(listing);
+        System.out.println("Your specified listing has been removed.");
     }
 
     private void help(String fileName) {

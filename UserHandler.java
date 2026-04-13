@@ -12,7 +12,7 @@ import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
-import org.mindrot.jbcrypt.BCrypt;
+import at.favre.lib.crypto.bcrypt.BCrypt;
 
 public class UserHandler extends DatabaseHandler {
 
@@ -60,16 +60,19 @@ public class UserHandler extends DatabaseHandler {
             if (checkUsernameResultSet.next()) {
                 throw new SQLException("Username already exists");
             }
-            String query = "INSERT INTO user (id, username, passwordHash) VALUES (?, ?, ?)";
+            String query = "INSERT INTO user (id, username, passwordHash, role) VALUES (?, ?, ?, ?)";
             UUID id = UUID.randomUUID();
-            String passwordHash = BCrypt.hashpw(password, BCrypt.gensalt());
+            String passwordHash = BCrypt.withDefaults().hashToString(12, password.toCharArray());
             PreparedStatement preparedStatement = this.connection.prepareStatement(query);
+
+            Role userRole = Role.MEMBER; // user level role
             preparedStatement.setString(1, id.toString());
             preparedStatement.setString(2, username);
             preparedStatement.setString(3, passwordHash);
+            preparedStatement.setString(4, userRole.toString());
             preparedStatement.setQueryTimeout(30);
             preparedStatement.executeUpdate();
-            user = new User(id, username, passwordHash, Role.MEMBER);
+            user = new User(id, username, passwordHash, userRole);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -86,10 +89,15 @@ public class UserHandler extends DatabaseHandler {
             ResultSet resultSet = preparedStatement.executeQuery();
             if (resultSet.next()) {
                 String passwordHash = resultSet.getString("passwordHash");
-                if (BCrypt.checkpw(password, passwordHash)) {
+                System.out.println(passwordHash); // debug print statement
+                BCrypt.Result result = BCrypt.verifyer().verify(password.toCharArray(), passwordHash);
+                if (result.verified) {
                     UUID id = UUID.fromString(resultSet.getString("id"));
                     Role role = Role.valueOf(resultSet.getString("role"));
                     user = new User(id, username, passwordHash, role);
+                }
+                else {
+                    System.out.println("Got row but invalid hash.");
                 }
             } 
         } catch (SQLTimeoutException e1) {
@@ -169,11 +177,6 @@ public class UserHandler extends DatabaseHandler {
             preparedStatement.setString(1, username);
             preparedStatement.setQueryTimeout(30);
             preparedStatement.executeUpdate();
-            String listingQuery = "DELETE FROM listing WHERE userId = ?";
-            PreparedStatement listingPreparedStatement = this.connection.prepareStatement(listingQuery);
-            listingPreparedStatement.setString(1, user.getId().toString());
-            listingPreparedStatement.setQueryTimeout(30);
-            listingPreparedStatement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
