@@ -58,7 +58,8 @@ public class UserHandler extends DatabaseHandler {
             checkUsernamePreparedStatement.setQueryTimeout(30);
             ResultSet checkUsernameResultSet = checkUsernamePreparedStatement.executeQuery();
             if (checkUsernameResultSet.next()) {
-                throw new SQLException("Username already exists");
+                System.err.println("Username already exists, please try again.");
+                return null;
             }
             String query = "INSERT INTO user (id, username, passwordHash, role) VALUES (?, ?, ?, ?)";
             UUID id = UUID.randomUUID();
