@@ -1,5 +1,6 @@
 Your Listings: Displays all of the listings that you have on the marketplace
 New Listing: Create a new listing on the marketplace
+Remove Listing: Removes the specified listing from the marketplace
 Browse Listings: Search through the current listings on the marketplace
 Buy Listing: Purchase a listing that is on the marketplace
 Manage Users: Displays admin options for managing users of the application
