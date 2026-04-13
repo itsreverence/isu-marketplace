@@ -70,9 +70,10 @@ public class InputValidation {
         float floatResult = 0.0f;
         boolean invalidInput = true;
         while (invalidInput) {
+            System.out.println(askingArgument);
             try {
                 floatResult = SCANNER.nextFloat();
-                if (floatResult > 0) {
+                if (floatResult < 0) {
                     System.out.println(failedString);
                 } else {
                     invalidInput = false;

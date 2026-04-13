@@ -110,7 +110,7 @@ public class ListingHandler extends DatabaseHandler {
         return listings;
     }
 
-    public void buyListing(Listing listing) {
+    public void removeListing(Listing listing) {
         UUID listingId = listing.getId();
         try {
             String query = "DELETE FROM listing WHERE id = ?";
@@ -122,6 +122,8 @@ public class ListingHandler extends DatabaseHandler {
             e.printStackTrace();
         }
     }
+
+
 
     public Listing getListing(UUID listingId) {
         Listing listing = null;
@@ -142,5 +144,18 @@ public class ListingHandler extends DatabaseHandler {
             e.printStackTrace();
         }
         return listing;
+    }
+
+    public void deleteUserListings(String username) throws SQLException {
+        try {
+            String query = "DELETE FROM listing WHERE username = ?";
+            PreparedStatement preparedStatement = this.connection.prepareStatement(query);
+            preparedStatement.setString(1, username);
+            preparedStatement.setQueryTimeout(30);
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
     }
 }
