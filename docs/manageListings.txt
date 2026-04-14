@@ -1,0 +1,3 @@
+Delete Listing: Deletes the specified listing from the marketplace
+Help: Displays some information about each command in the current menu
+Exit: Terminates the program upon the request of the user
