@@ -8,27 +8,67 @@ import java.util.UUID;
 import at.favre.lib.crypto.bcrypt.BCrypt;
 import at.favre.lib.bytes.Bytes;
 
+/**
+ * Controller class to handle the input and output of the application
+ */
 public class InputController {
-    private static final String INPUT_PROMPT = "Enter your choice: ";
-    private static final String USERNAME_PROMPT = "Enter your username: ";
-    private static final String PASSWORD_PROMPT = "Enter your password: ";
-    
-    private static final String LISTING_TITLE_PROMPT = "Enter the title of the listing: ";
-    private static final String LISTING_DESC_PROMPT = "Enter the description of the listing: ";
-    private static final String LISTING_PRICE_PROMPT = "Enter the price of the listing: ";
+    private static final String INPUT_PROMPT = "Enter your choice: "; // prompt for the user to enter their choice
+    private static final String USERNAME_PROMPT = "Enter your username: "; // prompt for the user to enter their
+                                                                           // username
+    private static final String PASSWORD_PROMPT = "Enter your password: "; // prompt for the user to enter their
+                                                                           // password
 
-    private static final String BUY_LISTING_PROMPT = "Enter the ID of the listing you want to buy: ";
-    private static final String REMOVE_LISTING_PROMPT = "Enter the ID of the listing you want to remove: ";
+    private static final String LISTING_TITLE_PROMPT = "Enter the title of the listing: "; // prompt for the user to
+                                                                                           // enter the title of the
+                                                                                           // listing
+    private static final String LISTING_DESC_PROMPT = "Enter the description of the listing: "; // prompt for the user
+                                                                                                // to enter the
+                                                                                                // description of the
+                                                                                                // listing
+    private static final String LISTING_PRICE_PROMPT = "Enter the price of the listing: "; // prompt for the user to
+                                                                                           // enter the price of the
+                                                                                           // listing
 
-    private static final String UPDATE_USER_ROLE_USERNAME_PROMPT = "Enter the username of the user: ";
-    private static final String UPDATE_USER_ROLE_PROMPT = "Enter the role of the user: ";
+    private static final String BUY_LISTING_PROMPT = "Enter the ID of the listing you want to buy: "; // prompt for the
+                                                                                                      // user to enter
+                                                                                                      // the ID of the
+                                                                                                      // listing they
+                                                                                                      // want to buy
+    private static final String REMOVE_LISTING_PROMPT = "Enter the ID of the listing you want to remove: "; // prompt
+                                                                                                            // for the
+                                                                                                            // user to
+                                                                                                            // enter the
+                                                                                                            // ID of the
+                                                                                                            // listing
+                                                                                                            // they want
+                                                                                                            // to remove
 
-    private static final String DELETE_USER_USERNAME_PROMPT = "Enter the username of the user: ";
+    private static final String UPDATE_USER_ROLE_USERNAME_PROMPT = "Enter the username of the user: "; // prompt for the
+                                                                                                       // user to enter
+                                                                                                       // the username
+                                                                                                       // of the user
+                                                                                                       // they want to
+                                                                                                       // update the
+                                                                                                       // role of
+    private static final String UPDATE_USER_ROLE_PROMPT = "Enter the role of the user: "; // prompt for the user to
+                                                                                          // enter the role of the user
+                                                                                          // they want to update
 
-    private static final String INVALID_PROMPT = "Invalid operation, please try again.";
+    private static final String DELETE_USER_USERNAME_PROMPT = "Enter the username of the user: "; // prompt for the user
+                                                                                                  // to enter the
+                                                                                                  // username of the
+                                                                                                  // user they want to
+                                                                                                  // delete
 
-    public InputController() {} // default constructor
+    private static final String INVALID_PROMPT = "Invalid operation, please try again."; // prompt for the user to enter
+                                                                                         // an invalid operation
 
+    /**
+     * Prompts the user to login or register
+     * 
+     * @param userHandler the user handler to use
+     * @return the user object
+     */
     public User loginOrRegister(UserHandler userHandler) {
         User user = null;
         System.out.println("1.) Login");
@@ -51,6 +91,12 @@ public class InputController {
         return user;
     }
 
+    /**
+     * Prompts the user to login
+     * 
+     * @param userHandler the user handler to use
+     * @return the user object
+     */
     private User login(UserHandler userHandler) {
         User user = null;
         while (user == null) {
@@ -68,18 +114,35 @@ public class InputController {
         return user;
     }
 
+    /**
+     * Prompts the user to register
+     * 
+     * @param userHandler the user handler to use
+     * @return the user object
+     */
     private User register(UserHandler userHandler) {
         User user = null;
         while (user == null) {
             String username = InputValidation.readString(USERNAME_PROMPT, INVALID_PROMPT);
             String password = InputValidation.readString(PASSWORD_PROMPT, INVALID_PROMPT);
             user = userHandler.register(username, password);
-            // TODO: we should also handle the case where user is null (if .register() fails)
+            // TODO: we should also handle the case where user is null (if .register()
+            // fails)
         }
         System.out.println("Welcome, " + user.getUsername() + "!");
         return user;
     }
 
+    /**
+     * Prompts the user to select an option from the main menu
+     * 
+     * @param user           the user object
+     * @param listingHandler the listing handler to use
+     * @param userHandler    the user handler to use
+     * @return true if the user wants to continue running the application, false
+     *         otherwise
+     * @throws SQLException if there is an error accessing the database
+     */
     public boolean mainMenu(User user, ListingHandler listingHandler, UserHandler userHandler) throws SQLException {
         if (user.getRole() == Role.ADMIN) {
             return adminMenu(user, listingHandler, userHandler);
@@ -117,13 +180,23 @@ public class InputController {
                     break;
                 case 6:
                     // again, i hope this is okay
-                    System.exit(0); 
+                    System.exit(0);
             }
             return returnValue;
         }
-        
+
     }
 
+    /**
+     * Prompts the user to select an option from the admin menu
+     * 
+     * @param user           the user object
+     * @param listingHandler the listing handler to use
+     * @param userHandler    the user handler to use
+     * @return true if the user wants to continue running the application, false
+     *         otherwise
+     * @throws SQLException if there is an error accessing the database
+     */
     public boolean adminMenu(User user, ListingHandler listingHandler, UserHandler userHandler) throws SQLException {
         System.out.println("1.) Your Listings");
         System.out.println("2.) New Listing");
@@ -163,11 +236,18 @@ public class InputController {
                 break;
             case 7:
                 // again, i hope this is okay
-                System.exit(0); 
+                System.exit(0);
         }
         return returnValue;
     }
 
+    /**
+     * Prompts the user to select an option from the manage users menu
+     * 
+     * @param userHandler    the user handler to use
+     * @param listingHandler the listing handler to use
+     * @throws SQLException if there is an error accessing the database
+     */
     private void manageUsers(UserHandler userHandler, ListingHandler listingHandler) throws SQLException {
         System.out.println("1.) View Users");
         System.out.println("2.) Update User Role");
@@ -193,10 +273,15 @@ public class InputController {
                 break;
             case 5:
                 // again, i hope this is okay
-                System.exit(0); 
+                System.exit(0);
         }
     }
 
+    /**
+     * Displays the information of all the users of the application
+     * 
+     * @param userHandler the user handler to use
+     */
     private void viewUsers(UserHandler userHandler) {
         List<User> users = userHandler.getUsers();
         for (User user : users) {
@@ -207,6 +292,12 @@ public class InputController {
         }
     }
 
+    /**
+     * Prompts the user to update the role of a user
+     * 
+     * @param userHandler the user handler to use
+     * @throws SQLException if there is an error accessing the database
+     */
     private void updateUserRole(UserHandler userHandler) throws SQLException {
         String username = InputValidation.readString(UPDATE_USER_ROLE_USERNAME_PROMPT, INVALID_PROMPT);
         System.out.println("1.) Member");
@@ -222,12 +313,25 @@ public class InputController {
         }
     }
 
+    /**
+     * Prompts the user to delete a user
+     * 
+     * @param userHandler    the user handler to use
+     * @param listingHandler the listing handler to use
+     * @throws SQLException if there is an error accessing the database
+     */
     private void deleteUser(UserHandler userHandler, ListingHandler listingHandler) throws SQLException {
         String username = InputValidation.readString(DELETE_USER_USERNAME_PROMPT, INVALID_PROMPT);
         userHandler.deleteUser(username);
         listingHandler.deleteUserListings(username);
     }
 
+    /**
+     * Displays the listings of a user
+     * 
+     * @param user           the user object
+     * @param listingHandler the listing handler to use
+     */
     private void userListings(User user, ListingHandler listingHandler) {
         List<Listing> listings = listingHandler.getUserListings(user);
         for (Listing listing : listings) {
@@ -238,6 +342,12 @@ public class InputController {
         }
     }
 
+    /**
+     * Prompts the user to create a new listing
+     * 
+     * @param user           the user object
+     * @param listingHandler the listing handler to use
+     */
     private void newListing(User user, ListingHandler listingHandler) {
         String title = InputValidation.readString(LISTING_TITLE_PROMPT, INVALID_PROMPT);
         String description = InputValidation.readString(LISTING_DESC_PROMPT, INVALID_PROMPT);
@@ -248,6 +358,11 @@ public class InputController {
         System.out.println("Your listing has been published to the marketplace.");
     }
 
+    /**
+     * Displays the listings of the application
+     * 
+     * @param listingHandler the listing handler to use
+     */
     private void browseListings(ListingHandler listingHandler) {
         List<Listing> listings = listingHandler.getListings();
         for (Listing listing : listings) {
@@ -259,15 +374,22 @@ public class InputController {
         }
     }
 
+    /**
+     * Prompts the user to buy a listing
+     * 
+     * @param user           the user object
+     * @param listingHandler the listing handler to use
+     * @throws SQLException if there is an error accessing the database
+     */
     private void buyListing(User user, ListingHandler listingHandler) {
         String listingId = InputValidation.readString(BUY_LISTING_PROMPT, INVALID_PROMPT);
         Listing listing = listingHandler.getListing(UUID.fromString(listingId));
-        
+
         // Ensure listing exists
         if (listing == null) {
             System.out.println("Invalid listing.");
             return;
-        } 
+        }
         // Ensure we are not buying our own
         if (listing.getUserId().equals(user.getId())) {
             System.out.println("You cannot buy your own listing.");
@@ -278,6 +400,13 @@ public class InputController {
         System.out.println("The specified listing has been purchased.");
     }
 
+    /**
+     * Prompts the user to remove a listing
+     * 
+     * @param user           the user object
+     * @param listingHandler the listing handler to use
+     * @throws SQLException if there is an error accessing the database
+     */
     private void removeListing(User user, ListingHandler listingHandler) {
         String listingId = InputValidation.readString(REMOVE_LISTING_PROMPT, INVALID_PROMPT);
         Listing listing = listingHandler.getListing(UUID.fromString(listingId));
@@ -297,6 +426,11 @@ public class InputController {
         System.out.println("Your specified listing has been removed.");
     }
 
+    /**
+     * Displays the help file for the application
+     * 
+     * @param fileName the name of the help file to display
+     */
     private void help(String fileName) {
         try {
             String filePath = "docs/" + fileName + ".txt";
@@ -311,4 +445,4 @@ public class InputController {
             e.printStackTrace();
         }
     }
- }
+}

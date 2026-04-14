@@ -5,8 +5,7 @@ import java.util.Scanner;
 
 /**
  * Helper class to provide functionality to user input validation.
- * <br>
- * Currently validates user inputs with integers and strings.
+ * Currently validates user inputs with integers, floats, and strings.
  */
 public class InputValidation {
 
@@ -14,8 +13,10 @@ public class InputValidation {
 
     /**
      * Method to validate a user inputted String, and returns a valid String.
+     * 
      * @param askingArgument The prompt the user is given for inputting a string.
-     * @param failedString The prompt the user is given for inputting a bad string.
+     * @param failedString   The prompt the user is given for inputting a bad
+     *                       string.
      * @return A correctly formatted string.
      */
     public static String readString(String askingArgument, String failedString) {
@@ -38,9 +39,11 @@ public class InputValidation {
 
     /**
      * Method to validate a user inputted integer, and returns a valid integer.
+     * 
      * @param askingArgument The prompt the user is given for inputting an integer.
-     * @param failedString The prompt the user is given for inputting a bad integer.
-     * @param maxVal The largest value some arbitrary menu should accept.
+     * @param failedString   The prompt the user is given for inputting a bad
+     *                       integer.
+     * @param maxVal         The largest value some arbitrary menu should accept.
      * @return A correctly formatted integer.
      */
     public static int readInt(String askingArgument, String failedString, int maxVal) {
@@ -66,6 +69,13 @@ public class InputValidation {
         return choice;
     }
 
+    /**
+     * Method to validate a user inputted float, and returns a valid float.
+     * 
+     * @param askingArgument The prompt the user is given for inputting a float.
+     * @param failedString   The prompt the user is given for inputting a bad float.
+     * @return A correctly formatted float.
+     */
     public static float readFloat(String askingArgument, String failedString) {
         float floatResult = 0.0f;
         boolean invalidInput = true;

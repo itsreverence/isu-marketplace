@@ -14,23 +14,40 @@ import java.util.logging.SimpleFormatter;
 
 import at.favre.lib.crypto.bcrypt.BCrypt;
 
+/**
+ * User handler to manage the users in the application
+ */
 public class UserHandler extends DatabaseHandler {
 
+    /**
+     * Constructor for the UserHandler class
+     * 
+     * @param databaseName The name of the database
+     */
     public UserHandler(String databaseName) {
         super(databaseName);
     }
 
+    /**
+     * Create the table if it doesn't exist
+     */
     @Override
     public void createTable() {
         try {
             Statement statement = this.connection.createStatement();
             statement.setQueryTimeout(30);
-            statement.executeUpdate("create table if not exists user (id string, username string, passwordHash string, role string)");
+            statement.executeUpdate(
+                    "create table if not exists user (id string, username string, passwordHash string, role string)");
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
+    /**
+     * Initialize the logger for the user handler
+     * 
+     * @param logger The logger to initialize
+     */
     @Override
     public void initLogger(Logger logger) {
         try {
@@ -49,6 +66,13 @@ public class UserHandler extends DatabaseHandler {
         }
     }
 
+    /**
+     * Register a new user
+     * 
+     * @param username The username of the user
+     * @param password The password of the user
+     * @return The new user
+     */
     public User register(String username, String password) {
         User user = null;
         try {
@@ -80,6 +104,13 @@ public class UserHandler extends DatabaseHandler {
         return user;
     }
 
+    /**
+     * Login a user
+     * 
+     * @param username The username of the user
+     * @param password The password of the user
+     * @return The logged in user
+     */
     public User login(String username, String password) {
         User user = null;
         try {
@@ -96,11 +127,10 @@ public class UserHandler extends DatabaseHandler {
                     UUID id = UUID.fromString(resultSet.getString("id"));
                     Role role = Role.valueOf(resultSet.getString("role"));
                     user = new User(id, username, passwordHash, role);
-                }
-                else {
+                } else {
                     System.out.println("Got row but invalid hash.");
                 }
-            } 
+            }
         } catch (SQLTimeoutException e1) {
             System.out.println("Invalid login.");
         } catch (SQLException e2) {
@@ -110,6 +140,11 @@ public class UserHandler extends DatabaseHandler {
         return user;
     }
 
+    /**
+     * Get all the users
+     * 
+     * @return All the users
+     */
     public List<User> getUsers() {
         List<User> users = new ArrayList<>();
         try {
@@ -130,6 +165,12 @@ public class UserHandler extends DatabaseHandler {
         return users;
     }
 
+    /**
+     * Get a user by username
+     * 
+     * @param username The username of the user
+     * @return The user
+     */
     public User getUser(String username) {
         User user = null;
         try {
@@ -150,6 +191,13 @@ public class UserHandler extends DatabaseHandler {
         return user;
     }
 
+    /**
+     * Update the role of a user
+     * 
+     * @param username The username of the user
+     * @param role     The new role of the user
+     * @throws SQLException If there is an error updating the user role
+     */
     public void updateUserRole(String username, Role role) throws SQLException {
         User user = getUser(username);
         if (user == null) {
@@ -167,6 +215,12 @@ public class UserHandler extends DatabaseHandler {
         }
     }
 
+    /**
+     * Delete a user
+     * 
+     * @param username The username of the user
+     * @throws SQLException If there is an error deleting the user
+     */
     public void deleteUser(String username) throws SQLException {
         User user = getUser(username);
         if (user == null) {

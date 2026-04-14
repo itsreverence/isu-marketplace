@@ -10,11 +10,20 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+/**
+ * Abstract database handler to manage our different databases
+ */
 public abstract class DatabaseHandler {
-    protected Connection connection;
-    private String databaseName;
-    private Logger logger;
+    protected Connection connection; // connection to the database
+    private String databaseName; // name of the database
+    private Logger logger; // logger for the database
 
+    /**
+     * Constructor which drops tables if set in the
+     * config, creates the table if it doesn't exist, and initializes the logger
+     * 
+     * @param databaseName the name of the database
+     */
     public DatabaseHandler(String databaseName) {
         this.databaseName = databaseName;
         try {
@@ -27,6 +36,9 @@ public abstract class DatabaseHandler {
         }
     }
 
+    /**
+     * Drops the tables if set in the JSON config
+     */
     private void dropTables() {
         boolean dropTables = false;
         try {
@@ -38,7 +50,7 @@ public abstract class DatabaseHandler {
         } catch (ParseException e) {
             e.printStackTrace();
         }
-        
+
         if (dropTables) {
             try {
                 String query = "DROP TABLE IF EXISTS " + this.databaseName;
@@ -51,7 +63,16 @@ public abstract class DatabaseHandler {
         }
     }
 
+    /**
+     * Create the table if it doesn't exist
+     */
     public abstract void createTable();
+
+    /**
+     * Initialize the logger for the database
+     * 
+     * @param logger the logger to initialize
+     */
     public abstract void initLogger(Logger logger);
-    
+
 }

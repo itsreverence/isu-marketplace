@@ -11,24 +11,40 @@ import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
-
+/**
+ * Listing handler to manage the listings in the application
+ */
 public class ListingHandler extends DatabaseHandler {
-    
+
+    /**
+     * Constructor for the ListingHandler class
+     * 
+     * @param databaseName The name of the database
+     */
     public ListingHandler(String databaseName) {
         super(databaseName);
     }
 
+    /**
+     * Create the table if it doesn't exist
+     */
     @Override
     public void createTable() {
         try {
             Statement statement = this.connection.createStatement();
             statement.setQueryTimeout(30);
-            statement.executeUpdate("create table if not exists listing (id string, userId string, title string, description string, price float)");
+            statement.executeUpdate(
+                    "create table if not exists listing (id string, userId string, title string, description string, price float)");
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
+    /**
+     * Initialize the logger for the listing handler
+     * 
+     * @param logger The logger to initialize
+     */
     @Override
     public void initLogger(Logger logger) {
         try {
@@ -47,6 +63,12 @@ public class ListingHandler extends DatabaseHandler {
         }
     }
 
+    /**
+     * Get the listings for a user
+     * 
+     * @param user The user to get the listings for
+     * @return The listings for the user
+     */
     public List<Listing> getUserListings(User user) {
         List<Listing> listings = new ArrayList<>();
         UUID userId = user.getId();
@@ -69,6 +91,15 @@ public class ListingHandler extends DatabaseHandler {
         return listings;
     }
 
+    /**
+     * Create a new listing
+     * 
+     * @param user        The user to create the listing for
+     * @param title       The title of the listing
+     * @param description The description of the listing
+     * @param price       The price of the listing
+     * @return The new listing
+     */
     public Listing createListing(User user, String title, String description, float price) {
         Listing listing = null;
         try {
@@ -89,6 +120,11 @@ public class ListingHandler extends DatabaseHandler {
         return listing;
     }
 
+    /**
+     * Get all the listings
+     * 
+     * @return All the listings
+     */
     public List<Listing> getListings() {
         List<Listing> listings = new ArrayList<>();
         try {
@@ -110,6 +146,11 @@ public class ListingHandler extends DatabaseHandler {
         return listings;
     }
 
+    /**
+     * Remove a listing
+     * 
+     * @param listing The listing to remove
+     */
     public void removeListing(Listing listing) {
         UUID listingId = listing.getId();
         try {
@@ -123,8 +164,12 @@ public class ListingHandler extends DatabaseHandler {
         }
     }
 
-
-
+    /**
+     * Get a listing by ID
+     * 
+     * @param listingId The ID of the listing to get
+     * @return The listing
+     */
     public Listing getListing(UUID listingId) {
         Listing listing = null;
         try {
@@ -146,6 +191,12 @@ public class ListingHandler extends DatabaseHandler {
         return listing;
     }
 
+    /**
+     * Delete all the listings for a user
+     * 
+     * @param username The username of the user to delete the listings for
+     * @throws SQLException If there is an error deleting the listings
+     */
     public void deleteUserListings(String username) throws SQLException {
         try {
             String query = "DELETE FROM listing WHERE username = ?";
