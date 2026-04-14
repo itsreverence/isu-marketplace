@@ -149,12 +149,13 @@ public class InputController {
         } else {
             System.out.println("1.) Your Listings");
             System.out.println("2.) New Listing");
-            System.out.println("3.) Browse Listings");
-            System.out.println("4.) Buy Listing");
-            System.out.println("5.) Help");
-            System.out.println("6.) Exit");
+            System.out.println("3.) Remove Listing");
+            System.out.println("4.) Browse Listings");
+            System.out.println("5.) Buy Listing");
+            System.out.println("6.) Help");
+            System.out.println("7.) Exit");
 
-            int choice = InputValidation.readInt(INPUT_PROMPT, INVALID_PROMPT, 6);
+            int choice = InputValidation.readInt(INPUT_PROMPT, INVALID_PROMPT, 7);
             boolean returnValue = false;
 
             switch (choice) {
@@ -167,18 +168,22 @@ public class InputController {
                     returnValue = true;
                     break;
                 case 3:
-                    browseListings(listingHandler);
+                    removeListing(user, listingHandler);
                     returnValue = true;
                     break;
                 case 4:
-                    buyListing(user, listingHandler);
+                    browseListings(listingHandler);
                     returnValue = true;
                     break;
                 case 5:
-                    help("mainMenu");
+                    buyListing(user, listingHandler);
                     returnValue = true;
                     break;
                 case 6:
+                    help("mainMenu");
+                    returnValue = true;
+                    break;
+                case 7:
                     // again, i hope this is okay
                     System.exit(0);
             }
@@ -200,13 +205,14 @@ public class InputController {
     public boolean adminMenu(User user, ListingHandler listingHandler, UserHandler userHandler) throws SQLException {
         System.out.println("1.) Your Listings");
         System.out.println("2.) New Listing");
-        System.out.println("3.) Browse Listings");
-        System.out.println("4.) Buy Listing");
-        System.out.println("5.) Manage Users");
-        System.out.println("6.) Help");
-        System.out.println("7.) Exit");
+        System.out.println("3.) Remove Listing");
+        System.out.println("4.) Browse Listings");
+        System.out.println("5.) Buy Listing");
+        System.out.println("6.) Manage Users");
+        System.out.println("7.) Help");
+        System.out.println("8.) Exit");
 
-        int choice = InputValidation.readInt(INPUT_PROMPT, INVALID_PROMPT, 7);
+        int choice = InputValidation.readInt(INPUT_PROMPT, INVALID_PROMPT, 8);
         boolean returnValue = false;
 
         switch (choice) {
@@ -219,22 +225,26 @@ public class InputController {
                 returnValue = true;
                 break;
             case 3:
-                browseListings(listingHandler);
+                removeListing(user, listingHandler);
                 returnValue = true;
                 break;
             case 4:
-                buyListing(user, listingHandler);
+                browseListings(listingHandler);
                 returnValue = true;
                 break;
             case 5:
-                manageUsers(userHandler, listingHandler);
+                buyListing(user, listingHandler);
                 returnValue = true;
                 break;
             case 6:
-                help("adminMenu");
+                manageUsers(userHandler, listingHandler);
                 returnValue = true;
                 break;
             case 7:
+                help("adminMenu");
+                returnValue = true;
+                break;
+            case 8:
                 // again, i hope this is okay
                 System.exit(0);
         }
