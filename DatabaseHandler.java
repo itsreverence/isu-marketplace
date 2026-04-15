@@ -27,7 +27,7 @@ public abstract class DatabaseHandler {
     public DatabaseHandler(String databaseName) {
         this.databaseName = databaseName;
         try {
-            this.connection = DriverManager.getConnection("jdbc:sqlite:" + this.databaseName + ".db");
+            this.connection = DriverManager.getConnection("jdbc:sqlite:db/" + this.databaseName + ".db");
             dropTables();
             createTable();
             initLogger(this.logger);
