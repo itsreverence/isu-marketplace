@@ -209,10 +209,11 @@ public class InputController {
         System.out.println("4.) Browse Listings");
         System.out.println("5.) Buy Listing");
         System.out.println("6.) Manage Users");
-        System.out.println("7.) Help");
-        System.out.println("8.) Exit");
+        System.out.println("7.) Manage Listings");
+        System.out.println("8.) Help");
+        System.out.println("9.) Exit");
 
-        int choice = InputValidation.readInt(INPUT_PROMPT, INVALID_PROMPT, 8);
+        int choice = InputValidation.readInt(INPUT_PROMPT, INVALID_PROMPT, 9);
         boolean returnValue = false;
 
         switch (choice) {
@@ -241,10 +242,14 @@ public class InputController {
                 returnValue = true;
                 break;
             case 7:
-                help("adminMenu");
+                manageListings(listingHandler);
                 returnValue = true;
                 break;
             case 8:
+                help("adminMenu");
+                returnValue = true;
+                break;
+            case 9:
                 // again, i hope this is okay
                 System.exit(0);
         }
@@ -288,6 +293,33 @@ public class InputController {
     }
 
     /**
+     * Prompts the user to select an option from the manage listings menu
+     * 
+     * @param userHandler    the user handler to use
+     * @param listingHandler the listing handler to use
+     * @throws SQLException if there is an error accessing the database
+     */
+    private void manageListings(ListingHandler listingHandler) throws SQLException {
+        System.out.println("1.) Delete Listing");
+        System.out.println("2.) Help");
+        System.out.println("3.) Exit");
+
+        int choice = InputValidation.readInt(INPUT_PROMPT, INVALID_PROMPT, 3);
+        switch (choice) {
+            case 1:
+                deleteListing(listingHandler);
+                break;
+            case 2:
+                help("manageListings");
+                manageListings(listingHandler);
+                break;
+            case 3:
+                // again, i hope this is okay
+                System.exit(0);
+        }
+    }
+
+    /**
      * Displays the information of all the users of the application
      * 
      * @param userHandler the user handler to use
@@ -300,6 +332,23 @@ public class InputController {
             System.out.println("Role: " + user.getRole());
             System.out.println("");
         }
+    }
+
+    /**
+     * Prompts the user to delete a listing
+     * 
+     * @param listingHandler the listing handler to use
+     * @throws SQLException if there is an error accessing the database
+     */
+    private void deleteListing(ListingHandler listingHandler) throws SQLException {
+        String listingId = InputValidation.readString(REMOVE_LISTING_PROMPT, INVALID_PROMPT);
+        Listing listing = listingHandler.getListing(UUID.fromString(listingId));
+        if (listing == null) {
+            System.out.println("The specified listing does not exist.");
+            return;
+        }
+        listingHandler.removeListing(listing);
+        System.out.println("The specified listing has been deleted.");
     }
 
     /**
