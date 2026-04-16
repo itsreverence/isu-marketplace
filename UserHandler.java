@@ -38,32 +38,41 @@ public class UserHandler extends DatabaseHandler {
             statement.setQueryTimeout(30);
             statement.executeUpdate(
                     "create table if not exists user (id string, username string, passwordHash string, role string)");
+            // CWE-778: Insufficient Logging
+            logger.info("User table created");
         } catch (SQLException e) {
-            e.printStackTrace();
+            // CWE-778: Insufficient Logging
+            logger.severe("Error creating table: " + e.getMessage());
         }
     }
 
     /**
      * Initialize the logger for the user handler
      * 
-     * @param logger The logger to initialize
+     * @return the logger for the user handler
      */
     @Override
-    public void initLogger(Logger logger) {
+    public Logger initLogger() {
         try {
-            logger = Logger.getLogger("UserLogger");
+            Logger logger = Logger.getLogger("UserLogger");
             File logDirectory = new File("./logs/");
             if (!logDirectory.exists()) {
                 logDirectory.mkdirs();
             }
+            // CWE-779: Logging of Excessive Data
             FileHandler fileHandler = new FileHandler("./logs/UserLogger.log");
             SimpleFormatter simpleFormatter = new SimpleFormatter();
             fileHandler.setFormatter(simpleFormatter);
             logger.addHandler(fileHandler);
             logger.setUseParentHandlers(false);
+            // CWE-778: Insufficient Logging
+            logger.info("User logger initialized");
+            return logger;
         } catch (IOException e) {
-            e.printStackTrace();
+            // CWE-778: Insufficient Logging
+            System.err.println("Error initializing logger: " + e.getMessage());
         }
+        return null;
     }
 
     /**
@@ -98,8 +107,11 @@ public class UserHandler extends DatabaseHandler {
             preparedStatement.setQueryTimeout(30);
             preparedStatement.executeUpdate();
             user = new User(id, username, passwordHash, userRole);
+            // CWE-778: Insufficient Logging
+            logger.info("User " + username + " registered");
         } catch (SQLException e) {
-            e.printStackTrace();
+            // CWE-778: Insufficient Logging
+            logger.severe("Error registering user: " + e.getMessage());
         }
         return user;
     }
@@ -121,20 +133,22 @@ public class UserHandler extends DatabaseHandler {
             ResultSet resultSet = preparedStatement.executeQuery();
             if (resultSet.next()) {
                 String passwordHash = resultSet.getString("passwordHash");
-                System.out.println(passwordHash); // debug print statement
                 BCrypt.Result result = BCrypt.verifyer().verify(password.toCharArray(), passwordHash);
                 if (result.verified) {
                     UUID id = UUID.fromString(resultSet.getString("id"));
                     Role role = Role.valueOf(resultSet.getString("role"));
                     user = new User(id, username, passwordHash, role);
-                } else {
-                    System.out.println("Got row but invalid hash.");
                 }
             }
-        } catch (SQLTimeoutException e1) {
+            // CWE-778: Insufficient Logging
+            logger.info("User " + username + " logged in");
+        } catch (SQLTimeoutException e) {
+            // CWE-778: Insufficient Logging
+            logger.severe("Error logging in: " + e.getMessage());
             System.out.println("Invalid login.");
-        } catch (SQLException e2) {
-            e2.printStackTrace();
+        } catch (SQLException e) {
+            // CWE-778: Insufficient Logging
+            logger.severe("Error logging in: " + e.getMessage());
         }
         // instantiated user: logged in! null, failed
         return user;
@@ -160,7 +174,8 @@ public class UserHandler extends DatabaseHandler {
                 users.add(new User(id, username, passwordHash, role));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            // CWE-778: Insufficient Logging
+            logger.severe("Error getting users: " + e.getMessage());
         }
         return users;
     }
@@ -186,7 +201,8 @@ public class UserHandler extends DatabaseHandler {
                 user = new User(id, username, passwordHash, role);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            // CWE-778: Insufficient Logging
+            logger.severe("Error getting user: " + e.getMessage());
         }
         return user;
     }
@@ -210,8 +226,11 @@ public class UserHandler extends DatabaseHandler {
             preparedStatement.setString(2, username);
             preparedStatement.setQueryTimeout(30);
             preparedStatement.executeUpdate();
+            // CWE-778: Insufficient Logging
+            logger.info("User " + username + " role updated to " + role.toString());
         } catch (SQLException e) {
-            e.printStackTrace();
+            // CWE-778: Insufficient Logging
+            logger.severe("Error updating user role: " + e.getMessage());
         }
     }
 
@@ -232,8 +251,11 @@ public class UserHandler extends DatabaseHandler {
             preparedStatement.setString(1, username);
             preparedStatement.setQueryTimeout(30);
             preparedStatement.executeUpdate();
+            // CWE-778: Insufficient Logging
+            logger.info("User " + username + " deleted");
         } catch (SQLException e) {
-            e.printStackTrace();
+            // CWE-778: Insufficient Logging
+            logger.severe("Error updating user role: " + e.getMessage());
         }
     }
 }

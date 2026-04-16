@@ -1,7 +1,12 @@
+import java.io.File;
+import java.io.IOException;
 import java.text.Normalizer;
 import java.text.Normalizer.Form;
 import java.util.InputMismatchException;
 import java.util.Scanner;
+import java.util.logging.FileHandler;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 /**
  * Helper class to provide functionality to user input validation.
@@ -9,7 +14,9 @@ import java.util.Scanner;
  */
 public class InputValidation {
 
-    private static final Scanner SCANNER = new Scanner(System.in);
+    private static Logger logger = initLogger(); // logger for the input validation
+
+    private static final Scanner SCANNER = new Scanner(System.in); // scanner for the input validation
 
     /**
      * Method to validate a user inputted String, and returns a valid String.
@@ -60,7 +67,8 @@ public class InputValidation {
                     invalidInput = false;
                 }
             } catch (InputMismatchException e) {
-                // log here -->
+                // CWE-778: Insufficient Logging
+                logger.severe("Error reading int: " + e.getMessage());
                 System.out.println(failedString);
             } finally {
                 SCANNER.nextLine(); // consume
@@ -89,12 +97,41 @@ public class InputValidation {
                     invalidInput = false;
                 }
             } catch (InputMismatchException e) {
-                // log here -->
+                // CWE-778: Insufficient Logging
+                logger.severe("Error reading float: " + e.getMessage());
                 System.out.println(failedString);
             } finally {
                 SCANNER.nextLine(); // consume
             }
         }
         return floatResult;
+    }
+
+    /**
+     * Initializes the logger for the input validation
+     * 
+     * @return the logger for the input validation
+     */
+    private static Logger initLogger() {
+        try {
+            Logger logger = Logger.getLogger("InputValidationLogger");
+            File logDirectory = new File("./logs/");
+            if (!logDirectory.exists()) {
+                logDirectory.mkdirs();
+            }
+            // CWE-779: Logging of Excessive Data
+            FileHandler fileHandler = new FileHandler("./logs/InputValidationLogger.log", 1000000, 1, true);
+            SimpleFormatter simpleFormatter = new SimpleFormatter();
+            fileHandler.setFormatter(simpleFormatter);
+            logger.addHandler(fileHandler);
+            logger.setUseParentHandlers(false);
+            // CWE-778: Insufficient Logging
+            logger.info("InputValidation logger initialized");
+            return logger;
+        } catch (IOException e) {
+            // CWE-778: Insufficient Logging
+            System.err.println("Error initializing logger: " + e.getMessage());
+        }
+        return null;
     }
 }

@@ -15,8 +15,8 @@ import org.json.simple.parser.ParseException;
  */
 public abstract class DatabaseHandler {
     protected Connection connection; // connection to the database
+    protected Logger logger; // logger for the database
     private String databaseName; // name of the database
-    private Logger logger; // logger for the database
 
     /**
      * Constructor which drops tables if set in the
@@ -27,12 +27,15 @@ public abstract class DatabaseHandler {
     public DatabaseHandler(String databaseName) {
         this.databaseName = databaseName;
         try {
+            this.logger = initLogger();
             this.connection = DriverManager.getConnection("jdbc:sqlite:db/" + this.databaseName + ".db");
             dropTables();
             createTable();
-            initLogger(this.logger);
+            // CWE-778: Insufficient Logging 
+            logger.info(this.databaseName + " database initialized");
         } catch (SQLException e) {
-            e.printStackTrace();
+            // CWE-778: Insufficient Logging
+            logger.severe("Error initializing database: " + e.getMessage());
         }
     }
 
@@ -46,9 +49,11 @@ public abstract class DatabaseHandler {
             JSONObject jsonObject = (JSONObject) object;
             dropTables = (boolean) jsonObject.get("dropTables");
         } catch (IOException e) {
-            e.printStackTrace();
+            // CWE-778: Insufficient Logging
+            logger.severe("Error reading config: " + e.getMessage());
         } catch (ParseException e) {
-            e.printStackTrace();
+            // CWE-778: Insufficient Logging
+            logger.severe("Error parsing config: " + e.getMessage());
         }
 
         if (dropTables) {
@@ -57,8 +62,11 @@ public abstract class DatabaseHandler {
                 PreparedStatement preparedStatement = this.connection.prepareStatement(query);
                 preparedStatement.setQueryTimeout(30);
                 preparedStatement.executeUpdate();
+                // CWE-778: Insufficient Logging
+                logger.info(this.databaseName + " tables dropped");
             } catch (SQLException e) {
-                e.printStackTrace();
+                // CWE-778: Insufficient Logging
+                logger.severe("Error dropping tables: " + e.getMessage());
             }
         }
     }
@@ -70,9 +78,7 @@ public abstract class DatabaseHandler {
 
     /**
      * Initialize the logger for the database
-     * 
-     * @param logger the logger to initialize
      */
-    public abstract void initLogger(Logger logger);
+    public abstract Logger initLogger();
 
 }
