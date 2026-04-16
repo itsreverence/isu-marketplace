@@ -17,11 +17,7 @@ public class Driver {
         User user = inputController.loginOrRegister(userHandler);
         boolean continueRunning = true;
         while (continueRunning) {
-            try {
                 continueRunning = inputController.mainMenu(user, listingHandler, userHandler);
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
         }
     }
 }

@@ -35,32 +35,41 @@ public class ListingHandler extends DatabaseHandler {
             statement.setQueryTimeout(30);
             statement.executeUpdate(
                     "create table if not exists listing (id string, userId string, title string, description string, price float)");
+            // CWE-778: Insufficient Logging
+            logger.info("Listing table created");
         } catch (SQLException e) {
-            e.printStackTrace();
+            // CWE-778: Insufficient Logging
+            logger.severe("Error creating table: " + e.getMessage());
         }
     }
 
     /**
      * Initialize the logger for the listing handler
      * 
-     * @param logger The logger to initialize
+     * @return the logger for the listing handler
      */
     @Override
-    public void initLogger(Logger logger) {
+    public Logger initLogger() {
         try {
-            logger = Logger.getLogger("ListingLogger");
+            Logger logger = Logger.getLogger("ListingLogger");
             File logDirectory = new File("./logs/");
             if (!logDirectory.exists()) {
                 logDirectory.mkdirs();
             }
-            FileHandler fileHandler = new FileHandler("./logs/ListingLogger.log");
+            // CWE-779: Logging of Excessive Data
+            FileHandler fileHandler = new FileHandler("./logs/ListingLogger.log", 1000000, 1, true);
             SimpleFormatter simpleFormatter = new SimpleFormatter();
             fileHandler.setFormatter(simpleFormatter);
             logger.addHandler(fileHandler);
             logger.setUseParentHandlers(false);
+            // CWE-778: Insufficient Logging
+            logger.info("Listing logger initialized");
+            return logger;
         } catch (IOException e) {
-            e.printStackTrace();
+            // CWE-778: Insufficient Logging
+            System.err.println("Error initializing logger: " + e.getMessage());
         }
+        return null;
     }
 
     /**
@@ -86,7 +95,8 @@ public class ListingHandler extends DatabaseHandler {
                 listings.add(new Listing(id, userId, title, description, price));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            // CWE-778: Insufficient Logging
+            logger.severe("Error getting user listings: " + e.getMessage());
         }
         return listings;
     }
@@ -114,8 +124,11 @@ public class ListingHandler extends DatabaseHandler {
             preparedStatement.setQueryTimeout(30);
             preparedStatement.executeUpdate();
             listing = new Listing(id, user.getId(), title, description, price);
+            // CWE-778: Insufficient Logging
+            logger.info("Listing " + id + " created");
         } catch (SQLException e) {
-            e.printStackTrace();
+            // CWE-778: Insufficient Logging
+            logger.severe("Error creating listing: " + e.getMessage());
         }
         return listing;
     }
@@ -141,7 +154,8 @@ public class ListingHandler extends DatabaseHandler {
                 listings.add(new Listing(id, listingUserId, title, description, price));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            // CWE-778: Insufficient Logging
+            logger.severe("Error getting listings: " + e.getMessage());
         }
         return listings;
     }
@@ -159,8 +173,11 @@ public class ListingHandler extends DatabaseHandler {
             preparedStatement.setString(1, listingId.toString());
             preparedStatement.setQueryTimeout(30);
             preparedStatement.executeUpdate();
+            // CWE-778: Insufficient Logging
+            logger.info("Listing " + listingId + " removed");
         } catch (SQLException e) {
-            e.printStackTrace();
+            // CWE-778: Insufficient Logging
+            logger.severe("Error removing listing: " + e.getMessage());
         }
     }
 
@@ -186,7 +203,8 @@ public class ListingHandler extends DatabaseHandler {
                 listing = new Listing(listingId, userId, title, description, price);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            // CWE-778: Insufficient Logging
+            logger.severe("Error getting listing: " + e.getMessage());
         }
         return listing;
     }
@@ -204,8 +222,11 @@ public class ListingHandler extends DatabaseHandler {
             preparedStatement.setString(1, username);
             preparedStatement.setQueryTimeout(30);
             preparedStatement.executeUpdate();
+            // CWE-778: Insufficient Logging
+            logger.info("User " + username + " listings deleted");
         } catch (SQLException e) {
-            e.printStackTrace();
+            // CWE-778: Insufficient Logging
+            logger.severe("Error deleting user listings: " + e.getMessage());
         }
 
     }

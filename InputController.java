@@ -1,9 +1,13 @@
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Scanner;
 import java.util.UUID;
+import java.util.logging.FileHandler;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 import at.favre.lib.crypto.bcrypt.BCrypt;
 import at.favre.lib.bytes.Bytes;
@@ -12,6 +16,7 @@ import at.favre.lib.bytes.Bytes;
  * Controller class to handle the input and output of the application
  */
 public class InputController {
+    private Logger logger; // logger for the input controller
     private static final String INPUT_PROMPT = "Enter your choice: "; // prompt for the user to enter their choice
     private static final String USERNAME_PROMPT = "Enter your username: "; // prompt for the user to enter their
                                                                            // username
@@ -63,6 +68,12 @@ public class InputController {
     private static final String INVALID_PROMPT = "Invalid operation, please try again."; // prompt for the user to enter
                                                                                          // an invalid operation
 
+
+    
+    public InputController() {
+        this.logger = initLogger();
+    }
+
     /**
      * Prompts the user to login or register
      * 
@@ -106,11 +117,16 @@ public class InputController {
             // if .login returns null, login failed.
             if (user == null) {
                 // encapsulate login operation via the same prompt
+                // CWE-778: Insufficient Logging
+                logger.info("Login failed for user " + username);
                 System.out.println(INVALID_PROMPT);
             }
         }
         // logged in
         System.out.println("Welcome back, " + user.getUsername() + "!");
+
+        // CWE-778: Insufficient Logging
+        logger.info("User " + user.getUsername() + " logged in");
         return user;
     }
 
@@ -130,6 +146,9 @@ public class InputController {
             // fails)
         }
         System.out.println("Welcome, " + user.getUsername() + "!");
+
+        // CWE-778: Insufficient Logging
+        logger.info("User " + user.getUsername() + " registered");
         return user;
     }
 
@@ -143,53 +162,58 @@ public class InputController {
      *         otherwise
      * @throws SQLException if there is an error accessing the database
      */
-    public boolean mainMenu(User user, ListingHandler listingHandler, UserHandler userHandler) throws SQLException {
-        if (user.getRole() == Role.ADMIN) {
-            return adminMenu(user, listingHandler, userHandler);
-        } else {
-            System.out.println("1.) Your Listings");
-            System.out.println("2.) New Listing");
-            System.out.println("3.) Remove Listing");
-            System.out.println("4.) Browse Listings");
-            System.out.println("5.) Buy Listing");
-            System.out.println("6.) Help");
-            System.out.println("7.) Exit");
-
-            int choice = InputValidation.readInt(INPUT_PROMPT, INVALID_PROMPT, 7);
-            boolean returnValue = false;
-
-            switch (choice) {
-                case 1:
-                    userListings(user, listingHandler);
-                    returnValue = true;
-                    break;
-                case 2:
-                    newListing(user, listingHandler);
-                    returnValue = true;
-                    break;
-                case 3:
-                    removeListing(user, listingHandler);
-                    returnValue = true;
-                    break;
-                case 4:
-                    browseListings(listingHandler);
-                    returnValue = true;
-                    break;
-                case 5:
-                    buyListing(user, listingHandler);
-                    returnValue = true;
-                    break;
-                case 6:
-                    help("mainMenu");
-                    returnValue = true;
-                    break;
-                case 7:
-                    // again, i hope this is okay
-                    System.exit(0);
+    public boolean mainMenu(User user, ListingHandler listingHandler, UserHandler userHandler) {
+        try {
+            if (user.getRole() == Role.ADMIN) {
+                return adminMenu(user, listingHandler, userHandler);
+            } else {
+                System.out.println("1.) Your Listings");
+                System.out.println("2.) New Listing");
+                System.out.println("3.) Remove Listing");
+                System.out.println("4.) Browse Listings");
+                System.out.println("5.) Buy Listing");
+                System.out.println("6.) Help");
+                System.out.println("7.) Exit");
+    
+                int choice = InputValidation.readInt(INPUT_PROMPT, INVALID_PROMPT, 7);
+                boolean returnValue = false;
+    
+                switch (choice) {
+                    case 1:
+                        userListings(user, listingHandler);
+                        returnValue = true;
+                        break;
+                    case 2:
+                        newListing(user, listingHandler);
+                        returnValue = true;
+                        break;
+                    case 3:
+                        removeListing(user, listingHandler);
+                        returnValue = true;
+                        break;
+                    case 4:
+                        browseListings(listingHandler);
+                        returnValue = true;
+                        break;
+                    case 5:
+                        buyListing(user, listingHandler);
+                        returnValue = true;
+                        break;
+                    case 6:
+                        help("mainMenu");
+                        returnValue = true;
+                        break;
+                    case 7:
+                        // again, i hope this is okay
+                        System.exit(0);
+                }
+                return returnValue;
             }
-            return returnValue;
+        } catch (SQLException e) {
+            // CWE-778: Insufficient Logging
+            logger.severe("Error in main menu: " + e.getMessage());
         }
-
+        return false;
     }
 
     /**
@@ -349,6 +373,9 @@ public class InputController {
         }
         listingHandler.removeListing(listing);
         System.out.println("The specified listing has been deleted.");
+
+        // CWE-778: Insufficient Logging
+        logger.info("Listing " + listing.getId() + " deleted");
     }
 
     /**
@@ -365,9 +392,13 @@ public class InputController {
         switch (choice) {
             case 1:
                 userHandler.updateUserRole(username, Role.MEMBER);
+                // CWE-778: Insufficient Logging
+                logger.info(username + " was updated to member");
                 break;
             case 2:
                 userHandler.updateUserRole(username, Role.ADMIN);
+                // CWE-778: Insufficient Logging
+                logger.info(username + " was updated to admin");
                 break;
         }
     }
@@ -383,6 +414,11 @@ public class InputController {
         String username = InputValidation.readString(DELETE_USER_USERNAME_PROMPT, INVALID_PROMPT);
         userHandler.deleteUser(username);
         listingHandler.deleteUserListings(username);
+
+        System.out.println("The specified user " + username + " has been deleted.");
+
+        // CWE-778: Insufficient Logging
+        logger.info(username + " deleted");
     }
 
     /**
@@ -413,8 +449,11 @@ public class InputController {
         float price = InputValidation.readFloat(LISTING_PRICE_PROMPT, INVALID_PROMPT);
 
         // create listing with validated input
-        listingHandler.createListing(user, title, description, price);
+        Listing listing = listingHandler.createListing(user, title, description, price);
         System.out.println("Your listing has been published to the marketplace.");
+
+        // CWE-778: Insufficient Logging
+        logger.info(user.getUsername() + " created listing " + listing.getId());
     }
 
     /**
@@ -457,6 +496,9 @@ public class InputController {
         // Finally, allow the user to purchase the listing
         listingHandler.removeListing(listing);
         System.out.println("The specified listing has been purchased.");
+
+        // CWE-778: Insufficient Logging
+        logger.info(user.getUsername() + " purchased listing " + listing.getId());
     }
 
     /**
@@ -483,6 +525,9 @@ public class InputController {
         }
         listingHandler.removeListing(listing);
         System.out.println("Your specified listing has been removed.");
+
+        // CWE-778: Insufficient Logging
+        logger.info(user.getUsername() + " removed listing " + listing.getId());
     }
 
     /**
@@ -501,7 +546,34 @@ public class InputController {
             }
             fileScanner.close();
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            // CWE-778: Insufficient Logging
+            logger.severe("Error displaying help file: " + e.getMessage());
         }
+    }
+
+    /**
+     * Initializes the logger for the input controller
+     * 
+     * @return the logger for the input controller
+     */
+    private Logger initLogger() {
+        try {
+            Logger logger = Logger.getLogger("InputLogger");
+            File logDirectory = new File("./logs/");
+            if (!logDirectory.exists()) {
+                logDirectory.mkdirs();
+            }
+            // CWE-779: Logging of Excessive Data
+            FileHandler fileHandler = new FileHandler("./logs/InputLogger.log", 1000000, 1, true);
+            SimpleFormatter simpleFormatter = new SimpleFormatter();
+            fileHandler.setFormatter(simpleFormatter);
+            logger.addHandler(fileHandler);
+            logger.setUseParentHandlers(false);
+            return logger;
+        } catch (IOException e) {
+            // CWE-778: Insufficient Logging
+            System.err.println("Error initializing logger: " + e.getMessage());
+        }
+        return null;
     }
 }
