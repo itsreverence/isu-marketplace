@@ -60,7 +60,7 @@ public class UserHandler extends DatabaseHandler {
                 logDirectory.mkdirs();
             }
             // CWE-779: Logging of Excessive Data
-            FileHandler fileHandler = new FileHandler("./logs/UserLogger.log");
+            FileHandler fileHandler = new FileHandler("./logs/UserLogger.log", 1000000, 1, true);
             SimpleFormatter simpleFormatter = new SimpleFormatter();
             fileHandler.setFormatter(simpleFormatter);
             logger.addHandler(fileHandler);
