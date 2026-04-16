@@ -16,6 +16,8 @@ import at.favre.lib.crypto.bcrypt.BCrypt;
 
 /**
  * User handler to manage the users in the application
+ * CWE-1080: Source Code File with Excessive Number of Lines of Code
+ * This file should stay below 1000 lines of code or be split into multiple files
  */
 public class UserHandler extends DatabaseHandler {
 

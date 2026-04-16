@@ -2,6 +2,8 @@ import java.util.UUID;
 
 /**
  * Listing class to represent a listing in the application
+ * CWE-1080: Source Code File with Excessive Number of Lines of Code
+ * This file should stay below 1000 lines of code or be split into multiple files
  */
 public class Listing {
     private UUID id; // ID of the listing

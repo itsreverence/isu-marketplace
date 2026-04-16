@@ -7,6 +7,8 @@ public class Driver {
     /**
      * Main method that sets up the databases, logs in the user, and opens the main
      * menu for the user
+     * CWE-1080: Source Code File with Excessive Number of Lines of Code
+     * This file should stay below 1000 lines of code or be split into multiple files
      * 
      * @param args the arguments passed to the application
      */

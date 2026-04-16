@@ -11,6 +11,8 @@ import java.util.logging.SimpleFormatter;
 /**
  * Helper class to provide functionality to user input validation.
  * Currently validates user inputs with integers, floats, and strings.
+ * CWE-1080: Source Code File with Excessive Number of Lines of Code
+ * This file should stay below 1000 lines of code or be split into multiple files
  */
 public class InputValidation {
 

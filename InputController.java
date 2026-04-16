@@ -14,6 +14,8 @@ import at.favre.lib.bytes.Bytes;
 
 /**
  * Controller class to handle the input and output of the application
+ * CWE-1080: Source Code File with Excessive Number of Lines of Code
+ * This file should stay below 1000 lines of code or be split into multiple files
  */
 public class InputController {
     private Logger logger; // logger for the input controller
