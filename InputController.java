@@ -111,25 +111,26 @@ public class InputController {
      * @return the user object
      */
     private User login(UserHandler userHandler) {
-        User user = null;
-        while (user == null) {
+        // CWE-1095: Loop Condition Value Update within the Loop
+        while (true) {
             String username = InputValidation.readString(USERNAME_PROMPT, INVALID_PROMPT);
             String password = InputValidation.readString(PASSWORD_PROMPT, INVALID_PROMPT);
-            user = userHandler.login(username, password);
+            User user = userHandler.login(username, password);
             // if .login returns null, login failed.
             if (user == null) {
                 // encapsulate login operation via the same prompt
                 // CWE-778: Insufficient Logging
                 logger.info("Login failed for user " + username);
                 System.out.println(INVALID_PROMPT);
+            } else {
+                // logged in
+                System.out.println("Welcome back, " + user.getUsername() + "!");
+
+                // CWE-778: Insufficient Logging
+                logger.info("User " + user.getUsername() + " logged in");
+                return user;
             }
         }
-        // logged in
-        System.out.println("Welcome back, " + user.getUsername() + "!");
-
-        // CWE-778: Insufficient Logging
-        logger.info("User " + user.getUsername() + " logged in");
-        return user;
     }
 
     /**
@@ -139,19 +140,18 @@ public class InputController {
      * @return the user object
      */
     private User register(UserHandler userHandler) {
-        User user = null;
-        while (user == null) {
+        // CWE-1095: Loop Condition Value Update within the Loop
+        while (true) {
             String username = InputValidation.readString(USERNAME_PROMPT, INVALID_PROMPT);
             String password = InputValidation.readString(PASSWORD_PROMPT, INVALID_PROMPT);
-            user = userHandler.register(username, password);
-            // TODO: we should also handle the case where user is null (if .register()
-            // fails)
+            User user = userHandler.register(username, password);
+            if (user != null) {
+                System.out.println("Welcome, " + user.getUsername() + "!");
+                // CWE-778: Insufficient Logging
+                logger.info("User " + user.getUsername() + " registered");
+                return user;
+            }
         }
-        System.out.println("Welcome, " + user.getUsername() + "!");
-
-        // CWE-778: Insufficient Logging
-        logger.info("User " + user.getUsername() + " registered");
-        return user;
     }
 
     /**

@@ -30,8 +30,8 @@ public class InputValidation {
      */
     public static String readString(String askingArgument, String failedString) {
         String stringResult = null;
-        boolean invalidInput = true;
-        while (invalidInput) {
+        // CWE-1095: Loop Condition Value Update within the Loop
+        while (true) {
             System.out.println(askingArgument);
             stringResult = SCANNER.nextLine();
 
@@ -40,10 +40,9 @@ public class InputValidation {
             if (stringResult == null || stringResult.isEmpty() || stringResult.isBlank()) {
                 System.out.println(failedString);
             } else {
-                invalidInput = false;
+                return stringResult;
             }
         }
-        return stringResult;
     }
 
     /**
@@ -56,17 +55,16 @@ public class InputValidation {
      * @return A correctly formatted integer.
      */
     public static int readInt(String askingArgument, String failedString, int maxVal) {
-        int choice = 0; // automatically out of range
-        boolean invalidInput = true;
-        while (invalidInput) {
+        // CWE-1095: Loop Condition Value Update within the Loop
+        while (true) {
             System.out.println(askingArgument);
             try {
-                choice = SCANNER.nextInt();
+                int choice = SCANNER.nextInt();
                 if (choice < 1 || choice > maxVal) {
                     System.out.println(failedString);
                 } else {
                     // if we get here, we have a good number!
-                    invalidInput = false;
+                    return choice;
                 }
             } catch (InputMismatchException e) {
                 // CWE-778: Insufficient Logging
@@ -76,7 +74,6 @@ public class InputValidation {
                 SCANNER.nextLine(); // consume
             }
         }
-        return choice;
     }
 
     /**
@@ -87,16 +84,15 @@ public class InputValidation {
      * @return A correctly formatted float.
      */
     public static float readFloat(String askingArgument, String failedString) {
-        float floatResult = 0.0f;
-        boolean invalidInput = true;
-        while (invalidInput) {
+        // CWE-1095: Loop Condition Value Update within the Loop
+        while (true) {
             System.out.println(askingArgument);
             try {
-                floatResult = SCANNER.nextFloat();
+                float floatResult = SCANNER.nextFloat();
                 if (floatResult < 0) {
                     System.out.println(failedString);
                 } else {
-                    invalidInput = false;
+                    return floatResult;
                 }
             } catch (InputMismatchException e) {
                 // CWE-778: Insufficient Logging
@@ -106,7 +102,6 @@ public class InputValidation {
                 SCANNER.nextLine(); // consume
             }
         }
-        return floatResult;
     }
 
     /**
