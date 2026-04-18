@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.logging.FileHandler;
+import java.util.logging.Handler;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
@@ -35,8 +36,8 @@ public class UserHandler extends DatabaseHandler {
      */
     @Override
     public void createTable() {
-        try {
-            Statement statement = this.connection.createStatement();
+        // CWE-459: Incomplete Cleanup
+        try (Statement statement = this.connection.createStatement()) {
             statement.setQueryTimeout(30);
             statement.executeUpdate(
                     "create table if not exists user (id string, username string, passwordHash string, role string)");
@@ -86,9 +87,10 @@ public class UserHandler extends DatabaseHandler {
      */
     public User register(String username, String password) {
         User user = null;
-        try {
-            String checkUsernameQuery = "SELECT * FROM user WHERE username = ?";
-            PreparedStatement checkUsernamePreparedStatement = this.connection.prepareStatement(checkUsernameQuery);
+        String checkUsernameQuery = "SELECT * FROM user WHERE username = ?";
+        String insertUserQuery = "INSERT INTO user (id, username, passwordHash, role) VALUES (?, ?, ?, ?)";
+        // CWE-459: Incomplete Cleanup
+        try (PreparedStatement checkUsernamePreparedStatement = this.connection.prepareStatement(checkUsernameQuery); PreparedStatement insertUserPreparedStatement = this.connection.prepareStatement(insertUserQuery)) {
             checkUsernamePreparedStatement.setString(1, username);
             checkUsernamePreparedStatement.setQueryTimeout(30);
             ResultSet checkUsernameResultSet = checkUsernamePreparedStatement.executeQuery();
@@ -96,18 +98,15 @@ public class UserHandler extends DatabaseHandler {
                 System.err.println("Username already exists, please try again.");
                 return null;
             }
-            String query = "INSERT INTO user (id, username, passwordHash, role) VALUES (?, ?, ?, ?)";
             UUID id = UUID.randomUUID();
             String passwordHash = BCrypt.withDefaults().hashToString(12, password.toCharArray());
-            PreparedStatement preparedStatement = this.connection.prepareStatement(query);
-
             Role userRole = Role.MEMBER; // user level role
-            preparedStatement.setString(1, id.toString());
-            preparedStatement.setString(2, username);
-            preparedStatement.setString(3, passwordHash);
-            preparedStatement.setString(4, userRole.toString());
-            preparedStatement.setQueryTimeout(30);
-            preparedStatement.executeUpdate();
+            insertUserPreparedStatement.setString(1, id.toString());
+            insertUserPreparedStatement.setString(2, username);
+            insertUserPreparedStatement.setString(3, passwordHash);
+            insertUserPreparedStatement.setString(4, userRole.toString());
+            insertUserPreparedStatement.setQueryTimeout(30);
+            insertUserPreparedStatement.executeUpdate();
             user = new User(id, username, passwordHash, userRole);
             // CWE-778: Insufficient Logging
             logger.info("User " + username + " registered");
@@ -127,9 +126,9 @@ public class UserHandler extends DatabaseHandler {
      */
     public User login(String username, String password) {
         User user = null;
-        try {
-            String query = "SELECT * FROM user WHERE username = ?";
-            PreparedStatement preparedStatement = this.connection.prepareStatement(query);
+        String loginQuery = "SELECT * FROM user WHERE username = ?";
+        // CWE-459: Incomplete Cleanup
+        try (PreparedStatement preparedStatement = this.connection.prepareStatement(loginQuery)) {
             preparedStatement.setString(1, username);
             preparedStatement.setQueryTimeout(30);
             ResultSet resultSet = preparedStatement.executeQuery();
@@ -163,9 +162,9 @@ public class UserHandler extends DatabaseHandler {
      */
     public List<User> getUsers() {
         List<User> users = new ArrayList<>();
-        try {
-            String query = "SELECT * FROM user";
-            PreparedStatement preparedStatement = this.connection.prepareStatement(query);
+        String getUsersQuery = "SELECT * FROM user";
+        // CWE-459: Incomplete Cleanup
+        try (PreparedStatement preparedStatement = this.connection.prepareStatement(getUsersQuery)) {
             preparedStatement.setQueryTimeout(30);
             ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
@@ -190,9 +189,9 @@ public class UserHandler extends DatabaseHandler {
      */
     public User getUser(String username) {
         User user = null;
-        try {
-            String query = "SELECT * FROM user WHERE username = ?";
-            PreparedStatement preparedStatement = this.connection.prepareStatement(query);
+        String getUserQuery = "SELECT * FROM user WHERE username = ?";
+        // CWE-459: Incomplete Cleanup
+        try (PreparedStatement preparedStatement = this.connection.prepareStatement(getUserQuery)) {
             preparedStatement.setString(1, username);
             preparedStatement.setQueryTimeout(30);
             ResultSet resultSet = preparedStatement.executeQuery();
@@ -221,9 +220,9 @@ public class UserHandler extends DatabaseHandler {
         if (user == null) {
             throw new SQLException("User not found");
         }
-        try {
-            String query = "UPDATE user SET role = ? WHERE username = ?";
-            PreparedStatement preparedStatement = this.connection.prepareStatement(query);
+        String updateUserRoleQuery = "UPDATE user SET role = ? WHERE username = ?";
+        // CWE-459: Incomplete Cleanup
+        try (PreparedStatement preparedStatement = this.connection.prepareStatement(updateUserRoleQuery)) {
             preparedStatement.setString(1, role.toString());
             preparedStatement.setString(2, username);
             preparedStatement.setQueryTimeout(30);
@@ -247,9 +246,9 @@ public class UserHandler extends DatabaseHandler {
         if (user == null) {
             throw new SQLException("User not found");
         }
-        try {
-            String query = "DELETE FROM user WHERE username = ?";
-            PreparedStatement preparedStatement = this.connection.prepareStatement(query);
+        String deleteUserQuery = "DELETE FROM user WHERE username = ?";
+        // CWE-459: Incomplete Cleanup
+        try (PreparedStatement preparedStatement = this.connection.prepareStatement(deleteUserQuery)) {
             preparedStatement.setString(1, username);
             preparedStatement.setQueryTimeout(30);
             preparedStatement.executeUpdate();
@@ -258,6 +257,19 @@ public class UserHandler extends DatabaseHandler {
         } catch (SQLException e) {
             // CWE-778: Insufficient Logging
             logger.severe("Error updating user role: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Clean up the database connection and the handlers for the user handler
+     */
+    @Override
+    public void cleanUp() {
+        super.cleanUp();
+        Handler[] handlers = logger.getHandlers();
+        for (Handler handler : handlers) {
+            handler.close();
+            logger.removeHandler(handler);
         }
     }
 }

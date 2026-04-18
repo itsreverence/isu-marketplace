@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.UUID;
 import java.util.logging.FileHandler;
+import java.util.logging.Handler;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
@@ -97,8 +98,7 @@ public class InputController {
                 user = register(userHandler);
                 break;
             case 3:
-                // i hope this is acceptable
-                System.exit(0);
+                return null;
         }
         // no default needed as readInt ensures we are in the range
         return user;
@@ -206,8 +206,7 @@ public class InputController {
                         returnValue = true;
                         break;
                     case 7:
-                        // again, i hope this is okay
-                        System.exit(0);
+                        return false;
                 }
                 return returnValue;
             }
@@ -276,8 +275,7 @@ public class InputController {
                 returnValue = true;
                 break;
             case 9:
-                // again, i hope this is okay
-                System.exit(0);
+                return false;
         }
         return returnValue;
     }
@@ -294,7 +292,7 @@ public class InputController {
         System.out.println("2.) Update User Role");
         System.out.println("3.) Delete User");
         System.out.println("4.) Help");
-        System.out.println("5.) Exit");
+        System.out.println("5.) Back");
 
         int choice = InputValidation.readInt(INPUT_PROMPT, INVALID_PROMPT, 5);
 
@@ -313,8 +311,7 @@ public class InputController {
                 manageUsers(userHandler, listingHandler);
                 break;
             case 5:
-                // again, i hope this is okay
-                System.exit(0);
+                return;
         }
     }
 
@@ -328,7 +325,7 @@ public class InputController {
     private void manageListings(ListingHandler listingHandler) throws SQLException {
         System.out.println("1.) Delete Listing");
         System.out.println("2.) Help");
-        System.out.println("3.) Exit");
+        System.out.println("3.) Back");
 
         int choice = InputValidation.readInt(INPUT_PROMPT, INVALID_PROMPT, 3);
         switch (choice) {
@@ -340,8 +337,7 @@ public class InputController {
                 manageListings(listingHandler);
                 break;
             case 3:
-                // again, i hope this is okay
-                System.exit(0);
+                return;
         }
     }
 
@@ -538,15 +534,14 @@ public class InputController {
      * @param fileName the name of the help file to display
      */
     private void help(String fileName) {
-        try {
-            String filePath = "docs/" + fileName + ".txt";
-            File file = new File(filePath);
-            Scanner fileScanner = new Scanner(file);
+        String filePath = "docs/" + fileName + ".txt";
+        File file = new File(filePath);
+        // CWE-459: Incomplete Cleanup
+        try (Scanner fileScanner = new Scanner(file)) {
             while (fileScanner.hasNextLine()) {
                 String line = fileScanner.nextLine();
                 System.out.println(line);
             }
-            fileScanner.close();
         } catch (FileNotFoundException e) {
             // CWE-778: Insufficient Logging
             logger.severe("Error displaying help file: " + e.getMessage());
@@ -577,5 +572,17 @@ public class InputController {
             System.err.println("Error initializing logger: " + e.getMessage());
         }
         return null;
+    }
+
+    /**
+     * Clean up the handlers for the input controller and the input validation class
+     */
+    public void cleanUp() {
+        InputValidation.cleanUp();
+        Handler[] handlers = logger.getHandlers();
+        for (Handler handler : handlers) {
+            handler.close();
+            logger.removeHandler(handler);
+        }
     }
 }

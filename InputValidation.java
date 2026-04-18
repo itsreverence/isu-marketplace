@@ -5,6 +5,7 @@ import java.text.Normalizer.Form;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 import java.util.logging.FileHandler;
+import java.util.logging.Handler;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
@@ -130,5 +131,17 @@ public class InputValidation {
             System.err.println("Error initializing logger: " + e.getMessage());
         }
         return null;
+    }
+
+    /**
+     * Clean up the handlers for the input validation
+     */
+    public static void cleanUp() {
+        SCANNER.close();
+        Handler[] handlers = logger.getHandlers();
+        for (Handler handler : handlers) {
+            handler.close();
+            logger.removeHandler(handler);
+        }
     }
 }
