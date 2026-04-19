@@ -108,7 +108,7 @@ public class UserHandler extends DatabaseHandler {
             preparedStatement.setString(4, userRole.toString());
             preparedStatement.setQueryTimeout(30);
             preparedStatement.executeUpdate();
-            user = new User(id, username, passwordHash, userRole);
+            user = new User(id, username, userRole);
             // CWE-778: Insufficient Logging
             logger.info("User " + username + " registered");
         } catch (SQLException e) {
@@ -139,7 +139,7 @@ public class UserHandler extends DatabaseHandler {
                 if (result.verified) {
                     UUID id = UUID.fromString(resultSet.getString("id"));
                     Role role = Role.valueOf(resultSet.getString("role"));
-                    user = new User(id, username, passwordHash, role);
+                    user = new User(id, username, role);
                 }
             }
             // CWE-778: Insufficient Logging
@@ -171,9 +171,8 @@ public class UserHandler extends DatabaseHandler {
             while (resultSet.next()) {
                 UUID id = UUID.fromString(resultSet.getString("id"));
                 String username = resultSet.getString("username");
-                String passwordHash = resultSet.getString("passwordHash");
                 Role role = Role.valueOf(resultSet.getString("role"));
-                users.add(new User(id, username, passwordHash, role));
+                users.add(new User(id, username, role));
             }
         } catch (SQLException e) {
             // CWE-778: Insufficient Logging
@@ -198,9 +197,8 @@ public class UserHandler extends DatabaseHandler {
             ResultSet resultSet = preparedStatement.executeQuery();
             if (resultSet.next()) {
                 UUID id = UUID.fromString(resultSet.getString("id"));
-                String passwordHash = resultSet.getString("passwordHash");
                 Role role = Role.valueOf(resultSet.getString("role"));
-                user = new User(id, username, passwordHash, role);
+                user = new User(id, username, role);
             }
         } catch (SQLException e) {
             // CWE-778: Insufficient Logging
