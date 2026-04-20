@@ -101,13 +101,13 @@ public class UserHandler extends DatabaseHandler {
             UUID id = UUID.randomUUID();
             String passwordHash = BCrypt.withDefaults().hashToString(12, password.toCharArray());
             Role userRole = Role.MEMBER; // user level role
-            insertUserPreparedStatement.setString(1, id.toString());
-            insertUserPreparedStatement.setString(2, username);
-            insertUserPreparedStatement.setString(3, passwordHash);
-            insertUserPreparedStatement.setString(4, userRole.toString());
-            insertUserPreparedStatement.setQueryTimeout(30);
-            insertUserPreparedStatement.executeUpdate();
-            user = new User(id, username, passwordHash, userRole);
+            preparedStatement.setString(1, id.toString());
+            preparedStatement.setString(2, username);
+            preparedStatement.setString(3, passwordHash);
+            preparedStatement.setString(4, userRole.toString());
+            preparedStatement.setQueryTimeout(30);
+            preparedStatement.executeUpdate();
+            user = new User(id, username, userRole);
             // CWE-778: Insufficient Logging
             logger.info("User " + username + " registered");
         } catch (SQLException e) {
@@ -138,7 +138,7 @@ public class UserHandler extends DatabaseHandler {
                 if (result.verified) {
                     UUID id = UUID.fromString(resultSet.getString("id"));
                     Role role = Role.valueOf(resultSet.getString("role"));
-                    user = new User(id, username, passwordHash, role);
+                    user = new User(id, username, role);
                 }
             }
             // CWE-778: Insufficient Logging
@@ -170,9 +170,8 @@ public class UserHandler extends DatabaseHandler {
             while (resultSet.next()) {
                 UUID id = UUID.fromString(resultSet.getString("id"));
                 String username = resultSet.getString("username");
-                String passwordHash = resultSet.getString("passwordHash");
                 Role role = Role.valueOf(resultSet.getString("role"));
-                users.add(new User(id, username, passwordHash, role));
+                users.add(new User(id, username, role));
             }
         } catch (SQLException e) {
             // CWE-778: Insufficient Logging
@@ -197,9 +196,8 @@ public class UserHandler extends DatabaseHandler {
             ResultSet resultSet = preparedStatement.executeQuery();
             if (resultSet.next()) {
                 UUID id = UUID.fromString(resultSet.getString("id"));
-                String passwordHash = resultSet.getString("passwordHash");
                 Role role = Role.valueOf(resultSet.getString("role"));
-                user = new User(id, username, passwordHash, role);
+                user = new User(id, username, role);
             }
         } catch (SQLException e) {
             // CWE-778: Insufficient Logging
