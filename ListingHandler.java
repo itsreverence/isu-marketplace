@@ -237,10 +237,10 @@ public class ListingHandler extends DatabaseHandler {
     /**
     * Search for listings by title
     * 
-    * @param
-    * @throws
+    * @param listingTitle the name of the listing 
+    * @throws IllegalArgumentException if the listingTitle is not correct format
     */
-    public List<Listing> searchListingsByTitle(String listingTitle) throws SQLException {
+    public synchronized List<Listing> searchListingsByTitle(String listingTitle) throws SQLException {
         if (listingTitle == null || listingTitle.isEmpty()) {
             throw new IllegalArgumentException();
         }
