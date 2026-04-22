@@ -1,5 +1,3 @@
-import java.sql.SQLException;
-
 /**
  * Driver class to run the application
  */

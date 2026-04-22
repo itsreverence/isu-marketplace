@@ -115,12 +115,12 @@ public class UserHandler extends DatabaseHandler {
             UUID id = UUID.randomUUID();
             String passwordHash = BCrypt.withDefaults().hashToString(12, password.toCharArray());
             Role userRole = Role.MEMBER; // user level role
-            preparedStatement.setString(1, id.toString());
-            preparedStatement.setString(2, username);
-            preparedStatement.setString(3, passwordHash);
-            preparedStatement.setString(4, userRole.toString());
-            preparedStatement.setQueryTimeout(30);
-            preparedStatement.executeUpdate();
+            insertUserPreparedStatement.setString(1, id.toString());
+            insertUserPreparedStatement.setString(2, username);
+            insertUserPreparedStatement.setString(3, passwordHash);
+            insertUserPreparedStatement.setString(4, userRole.toString());
+            insertUserPreparedStatement.setQueryTimeout(30);
+            insertUserPreparedStatement.executeUpdate();
             user = new User(id, username, userRole);
             // CWE-778: Insufficient Logging
             logger.info("User " + sanitizeForLog(username) + " registered");
@@ -137,9 +137,8 @@ public class UserHandler extends DatabaseHandler {
      * @param username The username of the user
      * @param password The password of the user
      * @return The logged in user
-     * @throws Exception 
      */
-    public synchronized User login(String username, String password) throws Exception {
+    public synchronized User login(String username, String password) {
         //CWE 307
         if (loginAttempts >= MAX_FAILED_ATTEMPTS) {
             System.out.println("Max login attempts reached.");
@@ -164,8 +163,7 @@ public class UserHandler extends DatabaseHandler {
                 } else {
                     loginAttempts++; //CWE 307
                 }
-            }
-            else {
+            } else {
                 loginAttempts++; //CWE 307
             }
             // CWE-778: Insufficient Logging

@@ -10,9 +10,6 @@ import java.util.logging.Handler;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
-import at.favre.lib.crypto.bcrypt.BCrypt;
-import at.favre.lib.bytes.Bytes;
-
 /**
  * Controller class to handle the input and output of the application
  * CWE-1080: Source Code File with Excessive Number of Lines of Code
@@ -486,8 +483,9 @@ public class InputController {
     private void handleBrowseMenu(ListingHandler listingHandler) throws SQLException{
         System.out.println("1.) Browse all listings");
         System.out.println("2.) Search for a listing by title");
-        System.out.println("3.) Exit");
-        int choice = InputValidation.readInt(INPUT_PROMPT, INVALID_PROMPT, 3);
+        System.out.println("3.) Help");
+        System.out.println("4.) Back");
+        int choice = InputValidation.readInt(INPUT_PROMPT, INVALID_PROMPT, 4);
         List<Listing> listings;
         switch (choice) {
             case 1:
@@ -509,8 +507,12 @@ public class InputController {
                     }
                 }
                 break;
-            case 3: 
-                System.exit(0);
+            case 3:
+                help("browseListings");
+                handleBrowseMenu(listingHandler);
+                break;
+            case 4: 
+                return;
         }
     }
 
