@@ -67,11 +67,25 @@ public class InputController {
                                                                                                   // user they want to
                                                                                                   // delete
 
-    private static final String INVALID_PROMPT = "Invalid operation, please try again."; // prompt for the user to enter
+    //private static final String INVALID_PROMPT = "Invalid operation, please try again."; // prompt for the user to enter
                                                                                          // an invalid operation
 
+    private static final String INVALID_LOGIN = "Login failed, please try again."; // prompt for when user login fails
 
+    private static final String INVALID_MENU_CHOICE = "Invalid choice, please try again."; // prompt for when user enters invalid menu choice integer
+
+    private static final String INVALID_USERNAME = "Username cannot be empty, please try again."; // prompt for when user enters empty username
     
+    private static final String INVALID_PASSWORD = "Password cannot be empty, please try again."; // prompt for when user enters empty password
+
+    private static final String INVALID_LISTING_ID = "Listing ID cannot be empty, please try again."; // prompt for when user enters empty listing ID
+
+    private static final String INVALID_LISTING_TITLE = "Listing title cannot be empty, please try again."; // prompt for when user enters empty listing title
+
+    private static final String INVALID_LISTING_DESCRIPTION = "Listing description cannot be empty, please try again."; // prompt for when user enters empty listing description
+
+    private static final String INVALID_LISTING_PRICE = "Listing price cannot be negative, please try again."; // prompt for when user enters invalid listing price
+
     public InputController() {
         this.logger = initLogger();
     }
@@ -87,7 +101,7 @@ public class InputController {
         System.out.println("1.) Login");
         System.out.println("2.) Register");
         System.out.println("3.) Quit");
-        int choice = InputValidation.readInt(INPUT_PROMPT, INVALID_PROMPT, 3);
+        int choice = InputValidation.readInt(INPUT_PROMPT, INVALID_MENU_CHOICE, 3);
 
         switch (choice) {
             case 1:
@@ -113,15 +127,15 @@ public class InputController {
     private User login(UserHandler userHandler) {
         // CWE-1095: Loop Condition Value Update within the Loop
         while (true) {
-            String username = InputValidation.readString(USERNAME_PROMPT, INVALID_PROMPT);
-            String password = InputValidation.readString(PASSWORD_PROMPT, INVALID_PROMPT);
+            String username = InputValidation.readString(USERNAME_PROMPT, INVALID_USERNAME);
+            String password = InputValidation.readString(PASSWORD_PROMPT, INVALID_PASSWORD);
             User user = userHandler.login(username, password);
             // if .login returns null, login failed.
             if (user == null) {
                 // encapsulate login operation via the same prompt
                 // CWE-778: Insufficient Logging
                 logger.info("Login failed for user " + username);
-                System.out.println(INVALID_PROMPT);
+                System.out.println(INVALID_LOGIN);
             } else {
                 // logged in
                 System.out.println("Welcome back, " + user.getUsername() + "!");
@@ -142,8 +156,8 @@ public class InputController {
     private User register(UserHandler userHandler) {
         // CWE-1095: Loop Condition Value Update within the Loop
         while (true) {
-            String username = InputValidation.readString(USERNAME_PROMPT, INVALID_PROMPT);
-            String password = InputValidation.readString(PASSWORD_PROMPT, INVALID_PROMPT);
+            String username = InputValidation.readString(USERNAME_PROMPT, INVALID_USERNAME);
+            String password = InputValidation.readString(PASSWORD_PROMPT, INVALID_PASSWORD);
             User user = userHandler.register(username, password);
             if (user != null) {
                 System.out.println("Welcome, " + user.getUsername() + "!");
@@ -177,7 +191,7 @@ public class InputController {
                 System.out.println("6.) Help");
                 System.out.println("7.) Exit");
     
-                int choice = InputValidation.readInt(INPUT_PROMPT, INVALID_PROMPT, 7);
+                int choice = InputValidation.readInt(INPUT_PROMPT, INVALID_MENU_CHOICE, 7);
                 boolean returnValue = false;
     
                 switch (choice) {
@@ -239,7 +253,7 @@ public class InputController {
         System.out.println("8.) Help");
         System.out.println("9.) Exit");
 
-        int choice = InputValidation.readInt(INPUT_PROMPT, INVALID_PROMPT, 9);
+        int choice = InputValidation.readInt(INPUT_PROMPT, INVALID_MENU_CHOICE, 9);
         boolean returnValue = false;
 
         switch (choice) {
@@ -296,7 +310,7 @@ public class InputController {
         System.out.println("4.) Help");
         System.out.println("5.) Exit");
 
-        int choice = InputValidation.readInt(INPUT_PROMPT, INVALID_PROMPT, 5);
+        int choice = InputValidation.readInt(INPUT_PROMPT, INVALID_MENU_CHOICE, 5);
 
         switch (choice) {
             case 1:
@@ -330,7 +344,7 @@ public class InputController {
         System.out.println("2.) Help");
         System.out.println("3.) Exit");
 
-        int choice = InputValidation.readInt(INPUT_PROMPT, INVALID_PROMPT, 3);
+        int choice = InputValidation.readInt(INPUT_PROMPT, INVALID_MENU_CHOICE, 3);
         switch (choice) {
             case 1:
                 deleteListing(listingHandler);
@@ -367,7 +381,7 @@ public class InputController {
      * @throws SQLException if there is an error accessing the database
      */
     private void deleteListing(ListingHandler listingHandler) throws SQLException {
-        String listingId = InputValidation.readString(REMOVE_LISTING_PROMPT, INVALID_PROMPT);
+        String listingId = InputValidation.readString(REMOVE_LISTING_PROMPT, INVALID_LISTING_ID);
         Listing listing = listingHandler.getListing(UUID.fromString(listingId));
         if (listing == null) {
             System.out.println("The specified listing does not exist.");
@@ -387,10 +401,10 @@ public class InputController {
      * @throws SQLException if there is an error accessing the database
      */
     private void updateUserRole(UserHandler userHandler) throws SQLException {
-        String username = InputValidation.readString(UPDATE_USER_ROLE_USERNAME_PROMPT, INVALID_PROMPT);
+        String username = InputValidation.readString(UPDATE_USER_ROLE_USERNAME_PROMPT, INVALID_USERNAME);
         System.out.println("1.) Member");
         System.out.println("2.) Admin");
-        int choice = InputValidation.readInt(UPDATE_USER_ROLE_PROMPT, INVALID_PROMPT, 2);
+        int choice = InputValidation.readInt(UPDATE_USER_ROLE_PROMPT, INVALID_MENU_CHOICE, 2);
         switch (choice) {
             case 1:
                 userHandler.updateUserRole(username, Role.MEMBER);
@@ -413,7 +427,7 @@ public class InputController {
      * @throws SQLException if there is an error accessing the database
      */
     private void deleteUser(UserHandler userHandler, ListingHandler listingHandler) throws SQLException {
-        String username = InputValidation.readString(DELETE_USER_USERNAME_PROMPT, INVALID_PROMPT);
+        String username = InputValidation.readString(DELETE_USER_USERNAME_PROMPT, INVALID_USERNAME);
         userHandler.deleteUser(username);
         listingHandler.deleteUserListings(username);
 
@@ -446,9 +460,9 @@ public class InputController {
      * @param listingHandler the listing handler to use
      */
     private void newListing(User user, ListingHandler listingHandler) {
-        String title = InputValidation.readString(LISTING_TITLE_PROMPT, INVALID_PROMPT);
-        String description = InputValidation.readString(LISTING_DESC_PROMPT, INVALID_PROMPT);
-        float price = InputValidation.readFloat(LISTING_PRICE_PROMPT, INVALID_PROMPT);
+        String title = InputValidation.readString(LISTING_TITLE_PROMPT, INVALID_LISTING_TITLE);
+        String description = InputValidation.readString(LISTING_DESC_PROMPT, INVALID_LISTING_DESCRIPTION);
+        float price = InputValidation.readFloat(LISTING_PRICE_PROMPT, INVALID_LISTING_PRICE);
 
         // create listing with validated input
         Listing listing = listingHandler.createListing(user, title, description, price);
@@ -478,14 +492,14 @@ public class InputController {
         System.out.println("1.) Browse all listings");
         System.out.println("2.) Search for a listing by title");
         System.out.println("3.) Exit");
-        int choice = InputValidation.readInt(INPUT_PROMPT, INVALID_PROMPT, 3);
+        int choice = InputValidation.readInt(INPUT_PROMPT, INVALID_MENU_CHOICE, 3);
         List<Listing> listings;
         switch (choice) {
             case 1:
                 browseListings(listingHandler);
                 break;
             case 2: 
-                String listingTitle = InputValidation.readString(LISTING_TITLE_PROMPT, INVALID_PROMPT);
+                String listingTitle = InputValidation.readString(LISTING_TITLE_PROMPT, INVALID_LISTING_TITLE);
                 listings = listingHandler.searchListingsByTitle(listingTitle);
                 //System.out.println();
                 if(listings.isEmpty()) {
@@ -515,7 +529,7 @@ public class InputController {
      * @throws SQLException if there is an error accessing the database
      */
     private void buyListing(User user, ListingHandler listingHandler) {
-        String listingId = InputValidation.readString(BUY_LISTING_PROMPT, INVALID_PROMPT);
+        String listingId = InputValidation.readString(BUY_LISTING_PROMPT, INVALID_LISTING_ID);
         Listing listing = listingHandler.getListing(UUID.fromString(listingId));
 
         // Ensure listing exists
@@ -544,7 +558,7 @@ public class InputController {
      * @throws SQLException if there is an error accessing the database
      */
     private void removeListing(User user, ListingHandler listingHandler) {
-        String listingId = InputValidation.readString(REMOVE_LISTING_PROMPT, INVALID_PROMPT);
+        String listingId = InputValidation.readString(REMOVE_LISTING_PROMPT, INVALID_LISTING_ID);
         Listing listing = listingHandler.getListing(UUID.fromString(listingId));
 
         // Ensure listing exists
