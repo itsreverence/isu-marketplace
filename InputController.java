@@ -256,7 +256,7 @@ public class InputController {
                 returnValue = true;
                 break;
             case 4:
-                browseListings(listingHandler);
+                handleBrowseMenu(listingHandler);
                 returnValue = true;
                 break;
             case 5:
@@ -482,6 +482,9 @@ public class InputController {
         List<Listing> listings;
         switch (choice) {
             case 1:
+                browseListings(listingHandler);
+                break;
+            case 2: 
                 String listingTitle = InputValidation.readString(LISTING_TITLE_PROMPT, INVALID_PROMPT);
                 listings = listingHandler.searchListingsByTitle(listingTitle);
                 //System.out.println();
@@ -496,9 +499,6 @@ public class InputController {
                         System.out.println("");
                     }
                 }
-                break;
-            case 2: 
-                browseListings(listingHandler);
                 break;
             case 3: 
                 System.exit(0);
