@@ -23,6 +23,10 @@ import at.favre.lib.crypto.bcrypt.BCrypt;
  */
 public class UserHandler extends DatabaseHandler {
 
+
+    private static final int MAX_FAILED_ATTEMPTS = 5; //CWE-307
+    private int loginAttempts = 0; //CWE 307
+
     /**
      * Constructor for the UserHandler class
      * 
@@ -79,6 +83,14 @@ public class UserHandler extends DatabaseHandler {
         return null;
     }
 
+    //CWE-117
+    private String sanitizeForLog(String input) {
+        if (input == null) {
+            return "(null)";
+        }
+        return input.replaceAll("[\r\n\t]", "_");
+    }
+
     /**
      * Register a new user
      * 
@@ -112,7 +124,7 @@ public class UserHandler extends DatabaseHandler {
             preparedStatement.executeUpdate();
             user = new User(id, username, userRole);
             // CWE-778: Insufficient Logging
-            logger.info("User " + username + " registered");
+            logger.info("User " + sanitizeForLog(username) + " registered");
         } catch (SQLException e) {
             // CWE-778: Insufficient Logging
             logger.severe("Error registering user: " + e.getMessage());
@@ -126,8 +138,15 @@ public class UserHandler extends DatabaseHandler {
      * @param username The username of the user
      * @param password The password of the user
      * @return The logged in user
+     * @throws Exception 
      */
-    public synchronized User login(String username, String password) {
+    public synchronized User login(String username, String password) throws Exception {
+        //CWE 307
+        if (loginAttempts >= MAX_FAILED_ATTEMPTS) {
+            System.out.println("Max login attempts reached.");
+            logger.warning("Max login attempts reached.");
+            return null;
+        }
         User user = null;
         try {
             String query = "SELECT * FROM user WHERE username = ?";
@@ -142,10 +161,16 @@ public class UserHandler extends DatabaseHandler {
                     UUID id = UUID.fromString(resultSet.getString("id"));
                     Role role = Role.valueOf(resultSet.getString("role"));
                     user = new User(id, username, role);
+                    loginAttempts = 0; //CWE 307
+                } else {
+                    loginAttempts++; //CWE 307
                 }
             }
+            else {
+                loginAttempts++; //CWE 307
+            }
             // CWE-778: Insufficient Logging
-            logger.info("User " + username + " logged in");
+            logger.info("User " + sanitizeForLog(username) + " logged in");
         } catch (SQLTimeoutException e) {
             // CWE-778: Insufficient Logging
             logger.severe("Error logging in: " + e.getMessage());
@@ -229,7 +254,7 @@ public class UserHandler extends DatabaseHandler {
             preparedStatement.setQueryTimeout(30);
             preparedStatement.executeUpdate();
             // CWE-778: Insufficient Logging
-            logger.info("User " + username + " role updated to " + role.toString());
+            logger.info("User " + sanitizeForLog(username) + " role updated to " + role.toString());
         } catch (SQLException e) {
             // CWE-778: Insufficient Logging
             logger.severe("Error updating user role: " + e.getMessage());
@@ -254,7 +279,7 @@ public class UserHandler extends DatabaseHandler {
             preparedStatement.setQueryTimeout(30);
             preparedStatement.executeUpdate();
             // CWE-778: Insufficient Logging
-            logger.info("User " + username + " deleted");
+            logger.info("User " + sanitizeForLog(username) + " deleted");
         } catch (SQLException e) {
             // CWE-778: Insufficient Logging
             logger.severe("Error updating user role: " + e.getMessage());
