@@ -18,6 +18,8 @@ import at.favre.lib.crypto.bcrypt.BCrypt;
  * User handler to manage the users in the application
  * CWE-1080: Source Code File with Excessive Number of Lines of Code
  * This file should stay below 1000 lines of code or be split into multiple files
+*  CWE-366: All methods that access the shared database connection are synchronized to prevent
+ * concurrent threads from reading/modifying data in an inconsistent state.
  */
 public class UserHandler extends DatabaseHandler {
 
@@ -84,7 +86,7 @@ public class UserHandler extends DatabaseHandler {
      * @param password The password of the user
      * @return The new user
      */
-    public User register(String username, String password) {
+    public synchronized User register(String username, String password) {
         User user = null;
         try {
             String checkUsernameQuery = "SELECT * FROM user WHERE username = ?";
@@ -125,7 +127,7 @@ public class UserHandler extends DatabaseHandler {
      * @param password The password of the user
      * @return The logged in user
      */
-    public User login(String username, String password) {
+    public synchronized User login(String username, String password) {
         User user = null;
         try {
             String query = "SELECT * FROM user WHERE username = ?";
@@ -161,7 +163,7 @@ public class UserHandler extends DatabaseHandler {
      * 
      * @return All the users
      */
-    public List<User> getUsers() {
+    public synchronized List<User> getUsers() {
         List<User> users = new ArrayList<>();
         try {
             String query = "SELECT * FROM user";
@@ -187,7 +189,7 @@ public class UserHandler extends DatabaseHandler {
      * @param username The username of the user
      * @return The user
      */
-    public User getUser(String username) {
+    public synchronized User getUser(String username) {
         User user = null;
         try {
             String query = "SELECT * FROM user WHERE username = ?";
@@ -214,7 +216,7 @@ public class UserHandler extends DatabaseHandler {
      * @param role     The new role of the user
      * @throws SQLException If there is an error updating the user role
      */
-    public void updateUserRole(String username, Role role) throws SQLException {
+    public synchronized void updateUserRole(String username, Role role) throws SQLException {
         User user = getUser(username);
         if (user == null) {
             throw new SQLException("User not found");
@@ -240,7 +242,7 @@ public class UserHandler extends DatabaseHandler {
      * @param username The username of the user
      * @throws SQLException If there is an error deleting the user
      */
-    public void deleteUser(String username) throws SQLException {
+    public synchronized void deleteUser(String username) throws SQLException {
         User user = getUser(username);
         if (user == null) {
             throw new SQLException("User not found");

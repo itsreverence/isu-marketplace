@@ -15,6 +15,8 @@ import java.util.logging.SimpleFormatter;
  * Listing handler to manage the listings in the application
  * CWE-1080: Source Code File with Excessive Number of Lines of Code
  * This file should stay below 1000 lines of code or be split into multiple files
+ * CWE-366: All methods that access the shared database connection are synchronized to prevent
+ * concurrent threads from reading/modifying data in an inconsistent state.
  */
 public class ListingHandler extends DatabaseHandler {
 
@@ -80,7 +82,7 @@ public class ListingHandler extends DatabaseHandler {
      * @param user The user to get the listings for
      * @return The listings for the user
      */
-    public List<Listing> getUserListings(User user) {
+    public synchronized List<Listing> getUserListings(User user) {
         List<Listing> listings = new ArrayList<>();
         UUID userId = user.getId();
         try {
@@ -112,7 +114,7 @@ public class ListingHandler extends DatabaseHandler {
      * @param price       The price of the listing
      * @return The new listing
      */
-    public Listing createListing(User user, String title, String description, float price) {
+    public synchronized Listing createListing(User user, String title, String description, float price) {
         Listing listing = null;
         try {
             String query = "INSERT INTO listing (id, userId, title, description, price) VALUES (?, ?, ?, ?, ?)";
@@ -140,7 +142,7 @@ public class ListingHandler extends DatabaseHandler {
      * 
      * @return All the listings
      */
-    public List<Listing> getListings() {
+    public synchronized List<Listing> getListings() {
         List<Listing> listings = new ArrayList<>();
         try {
             String query = "SELECT * FROM listing";
@@ -167,7 +169,7 @@ public class ListingHandler extends DatabaseHandler {
      * 
      * @param listing The listing to remove
      */
-    public void removeListing(Listing listing) {
+    public synchronized void removeListing(Listing listing) {
         UUID listingId = listing.getId();
         try {
             String query = "DELETE FROM listing WHERE id = ?";
@@ -189,7 +191,7 @@ public class ListingHandler extends DatabaseHandler {
      * @param listingId The ID of the listing to get
      * @return The listing
      */
-    public Listing getListing(UUID listingId) {
+    public synchronized Listing getListing(UUID listingId) {
         Listing listing = null;
         try {
             String query = "SELECT * FROM listing WHERE id = ?";
@@ -217,7 +219,7 @@ public class ListingHandler extends DatabaseHandler {
      * @param username The username of the user to delete the listings for
      * @throws SQLException If there is an error deleting the listings
      */
-    public void deleteUserListings(String username) throws SQLException {
+    public synchronized void deleteUserListings(String username) throws SQLException {
         try {
             String query = "DELETE FROM listing WHERE username = ?";
             PreparedStatement preparedStatement = this.connection.prepareStatement(query);
