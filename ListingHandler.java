@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.logging.FileHandler;
+import java.util.logging.Handler;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
@@ -15,6 +16,8 @@ import java.util.logging.SimpleFormatter;
  * Listing handler to manage the listings in the application
  * CWE-1080: Source Code File with Excessive Number of Lines of Code
  * This file should stay below 1000 lines of code or be split into multiple files
+ * CWE-366: All methods that access the shared database connection are synchronized to prevent
+ * concurrent threads from reading/modifying data in an inconsistent state.
  */
 public class ListingHandler extends DatabaseHandler {
 
@@ -32,8 +35,8 @@ public class ListingHandler extends DatabaseHandler {
      */
     @Override
     public void createTable() {
-        try {
-            Statement statement = this.connection.createStatement();
+        // CWE-459: Incomplete Cleanup
+        try (Statement statement = this.connection.createStatement()) {
             statement.setQueryTimeout(30);
             statement.executeUpdate(
                     "create table if not exists listing (id string, userId string, title string, description string, price float)");
@@ -80,12 +83,12 @@ public class ListingHandler extends DatabaseHandler {
      * @param user The user to get the listings for
      * @return The listings for the user
      */
-    public List<Listing> getUserListings(User user) {
+    public synchronized List<Listing> getUserListings(User user) {
         List<Listing> listings = new ArrayList<>();
         UUID userId = user.getId();
-        try {
-            String query = "SELECT * FROM listing WHERE userId = ?";
-            PreparedStatement preparedStatement = this.connection.prepareStatement(query);
+        String getUserListingsQuery = "SELECT * FROM listing WHERE userId = ?";
+        // CWE-459: Incomplete Cleanup
+        try (PreparedStatement preparedStatement = this.connection.prepareStatement(getUserListingsQuery)) {
             preparedStatement.setString(1, userId.toString());
             preparedStatement.setQueryTimeout(30);
             ResultSet resultSet = preparedStatement.executeQuery();
@@ -112,11 +115,11 @@ public class ListingHandler extends DatabaseHandler {
      * @param price       The price of the listing
      * @return The new listing
      */
-    public Listing createListing(User user, String title, String description, float price) {
+    public synchronized Listing createListing(User user, String title, String description, float price) {
         Listing listing = null;
-        try {
-            String query = "INSERT INTO listing (id, userId, title, description, price) VALUES (?, ?, ?, ?, ?)";
-            PreparedStatement preparedStatement = this.connection.prepareStatement(query);
+        String createListingQuery = "INSERT INTO listing (id, userId, title, description, price) VALUES (?, ?, ?, ?, ?)";
+        // CWE-459: Incomplete Cleanup
+        try (PreparedStatement preparedStatement = this.connection.prepareStatement(createListingQuery)) {
             UUID id = UUID.randomUUID();
             preparedStatement.setString(1, id.toString());
             preparedStatement.setString(2, user.getId().toString());
@@ -140,11 +143,11 @@ public class ListingHandler extends DatabaseHandler {
      * 
      * @return All the listings
      */
-    public List<Listing> getListings() {
+    public synchronized List<Listing> getListings() {
         List<Listing> listings = new ArrayList<>();
-        try {
-            String query = "SELECT * FROM listing";
-            PreparedStatement preparedStatement = this.connection.prepareStatement(query);
+        String getListingsQuery = "SELECT * FROM listing";
+        // CWE-459: Incomplete Cleanup
+        try (PreparedStatement preparedStatement = this.connection.prepareStatement(getListingsQuery)) {
             preparedStatement.setQueryTimeout(30);
             ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
@@ -167,11 +170,11 @@ public class ListingHandler extends DatabaseHandler {
      * 
      * @param listing The listing to remove
      */
-    public void removeListing(Listing listing) {
+    public synchronized void removeListing(Listing listing) {
         UUID listingId = listing.getId();
-        try {
-            String query = "DELETE FROM listing WHERE id = ?";
-            PreparedStatement preparedStatement = this.connection.prepareStatement(query);
+        String deleteListingQuery = "DELETE FROM listing WHERE id = ?";
+        // CWE-459: Incomplete Cleanup
+        try (PreparedStatement preparedStatement = this.connection.prepareStatement(deleteListingQuery)) {
             preparedStatement.setString(1, listingId.toString());
             preparedStatement.setQueryTimeout(30);
             preparedStatement.executeUpdate();
@@ -189,11 +192,11 @@ public class ListingHandler extends DatabaseHandler {
      * @param listingId The ID of the listing to get
      * @return The listing
      */
-    public Listing getListing(UUID listingId) {
+    public synchronized Listing getListing(UUID listingId) {
         Listing listing = null;
-        try {
-            String query = "SELECT * FROM listing WHERE id = ?";
-            PreparedStatement preparedStatement = this.connection.prepareStatement(query);
+        String getListingQuery = "SELECT * FROM listing WHERE id = ?";
+        // CWE-459: Incomplete Cleanup
+        try (PreparedStatement preparedStatement = this.connection.prepareStatement(getListingQuery)) {
             preparedStatement.setString(1, listingId.toString());
             preparedStatement.setQueryTimeout(30);
             ResultSet resultSet = preparedStatement.executeQuery();
@@ -217,10 +220,10 @@ public class ListingHandler extends DatabaseHandler {
      * @param username The username of the user to delete the listings for
      * @throws SQLException If there is an error deleting the listings
      */
-    public void deleteUserListings(String username) throws SQLException {
-        try {
-            String query = "DELETE FROM listing WHERE username = ?";
-            PreparedStatement preparedStatement = this.connection.prepareStatement(query);
+    public synchronized void deleteUserListings(String username) throws SQLException {
+        String deleteUserListingsQuery = "DELETE FROM listing WHERE username = ?";
+        // CWE-459: Incomplete Cleanup
+        try (PreparedStatement preparedStatement = this.connection.prepareStatement(deleteUserListingsQuery)) {
             preparedStatement.setString(1, username);
             preparedStatement.setQueryTimeout(30);
             preparedStatement.executeUpdate();
@@ -235,10 +238,10 @@ public class ListingHandler extends DatabaseHandler {
     /**
     * Search for listings by title
     * 
-    * @param
-    * @throws
+    * @param listingTitle the name of the listing 
+    * @throws IllegalArgumentException if the listingTitle is not correct format
     */
-    public List<Listing> searchListingsByTitle(String listingTitle) throws SQLException {
+    public synchronized List<Listing> searchListingsByTitle(String listingTitle) throws SQLException {
         if (listingTitle == null || listingTitle.isEmpty()) {
             throw new IllegalArgumentException();
         }
@@ -271,4 +274,16 @@ public class ListingHandler extends DatabaseHandler {
         }
     }
 
+    /**
+     * Clean up the database connection and the handlers for the listing handler
+     */
+    @Override
+    public void cleanUp() {
+        super.cleanUp();
+        Handler[] handlers = logger.getHandlers();
+        for (Handler handler : handlers) {
+            handler.close();
+            logger.removeHandler(handler);
+        }
+    }
 }

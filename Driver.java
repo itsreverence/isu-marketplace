@@ -1,5 +1,3 @@
-import java.sql.SQLException;
-
 /**
  * Driver class to run the application
  */
@@ -17,9 +15,14 @@ public class Driver {
         ListingHandler listingHandler = new ListingHandler("listing");
         InputController inputController = new InputController();
         User user = inputController.loginOrRegister(userHandler);
-        // CWE-1095: Loop Condition Value Update within the Loop
-        while (inputController.mainMenu(user, listingHandler, userHandler)) {
-            // Continue running the application
+        if (user != null) {
+            // CWE-1095: Loop Condition Value Update within the Loop
+            while (inputController.mainMenu(user, listingHandler, userHandler)) {
+                // Continue running the application
+            }
         }
+        userHandler.cleanUp();
+        listingHandler.cleanUp();
+        inputController.cleanUp();
     }
 }

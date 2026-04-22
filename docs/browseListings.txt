@@ -1,0 +1,4 @@
+Browse All Listings: Displays all of the listings available on the marketplace
+Search Listings By Title: Prompts for a title and returns listing with that title
+Help: Displays some information about each command in the current menu
+Back: Returns back to the main menu of the program
