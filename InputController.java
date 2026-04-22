@@ -194,7 +194,7 @@ public class InputController {
                         returnValue = true;
                         break;
                     case 4:
-                        browseListings(listingHandler);
+                        handleBrowseMenu(listingHandler);
                         returnValue = true;
                         break;
                     case 5:
@@ -256,7 +256,7 @@ public class InputController {
                 returnValue = true;
                 break;
             case 4:
-                browseListings(listingHandler);
+                handleBrowseMenu(listingHandler);
                 returnValue = true;
                 break;
             case 5:
@@ -486,6 +486,39 @@ public class InputController {
             System.out.println("");
         }
     }
+
+    private void handleBrowseMenu(ListingHandler listingHandler) throws SQLException{
+        System.out.println("1.) Browse all listings");
+        System.out.println("2.) Search for a listing by title");
+        System.out.println("3.) Exit");
+        int choice = InputValidation.readInt(INPUT_PROMPT, INVALID_PROMPT, 3);
+        List<Listing> listings;
+        switch (choice) {
+            case 1:
+                browseListings(listingHandler);
+                break;
+            case 2: 
+                String listingTitle = InputValidation.readString(LISTING_TITLE_PROMPT, INVALID_PROMPT);
+                listings = listingHandler.searchListingsByTitle(listingTitle);
+                //System.out.println();
+                if(listings.isEmpty()) {
+                    System.out.println("No listings found with that title.");
+                } else {
+                    for (Listing listing : listings) {
+                        System.out.println("ID: " + listing.getId());
+                        System.out.println("Title: " + listing.getTitle());
+                        System.out.println("Description: " + listing.getDescription());
+                        System.out.println("Price: " + listing.getPrice());
+                        System.out.println("");
+                    }
+                }
+                break;
+            case 3: 
+                System.exit(0);
+        }
+    }
+
+
 
     /**
      * Prompts the user to buy a listing
