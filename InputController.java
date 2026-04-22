@@ -194,7 +194,7 @@ public class InputController {
                         returnValue = true;
                         break;
                     case 4:
-                        browseListings(listingHandler);
+                        handleBrowseMenu(listingHandler);
                         returnValue = true;
                         break;
                     case 5:
@@ -255,7 +255,7 @@ public class InputController {
                 returnValue = true;
                 break;
             case 4:
-                browseListings(listingHandler);
+                handleBrowseMenu(listingHandler);
                 returnValue = true;
                 break;
             case 5:
@@ -364,7 +364,15 @@ public class InputController {
      */
     private void deleteListing(ListingHandler listingHandler) throws SQLException {
         String listingId = InputValidation.readString(REMOVE_LISTING_PROMPT, INVALID_PROMPT);
-        Listing listing = listingHandler.getListing(UUID.fromString(listingId));
+        // CWE-229: Improper Handling of Values - validate UUID format before parsing
+        UUID listingUUID;
+        try {
+            listingUUID = UUID.fromString(listingId);
+        } catch (IllegalArgumentException e) {
+            System.out.println("Invalid listing ID format.");
+            return;
+        }
+        Listing listing = listingHandler.getListing(listingUUID);
         if (listing == null) {
             System.out.println("The specified listing does not exist.");
             return;
@@ -447,7 +455,12 @@ public class InputController {
         float price = InputValidation.readFloat(LISTING_PRICE_PROMPT, INVALID_PROMPT);
 
         // create listing with validated input
+        // CWE-229: Improper Handling of Values - check return value before use
         Listing listing = listingHandler.createListing(user, title, description, price);
+        if (listing == null) {
+            System.out.println("Failed to create listing, please try again.");
+            return;
+        }
         System.out.println("Your listing has been published to the marketplace.");
 
         // CWE-778: Insufficient Logging
@@ -470,6 +483,39 @@ public class InputController {
         }
     }
 
+    private void handleBrowseMenu(ListingHandler listingHandler) throws SQLException{
+        System.out.println("1.) Browse all listings");
+        System.out.println("2.) Search for a listing by title");
+        System.out.println("3.) Exit");
+        int choice = InputValidation.readInt(INPUT_PROMPT, INVALID_PROMPT, 3);
+        List<Listing> listings;
+        switch (choice) {
+            case 1:
+                browseListings(listingHandler);
+                break;
+            case 2: 
+                String listingTitle = InputValidation.readString(LISTING_TITLE_PROMPT, INVALID_PROMPT);
+                listings = listingHandler.searchListingsByTitle(listingTitle);
+                //System.out.println();
+                if(listings.isEmpty()) {
+                    System.out.println("No listings found with that title.");
+                } else {
+                    for (Listing listing : listings) {
+                        System.out.println("ID: " + listing.getId());
+                        System.out.println("Title: " + listing.getTitle());
+                        System.out.println("Description: " + listing.getDescription());
+                        System.out.println("Price: " + listing.getPrice());
+                        System.out.println("");
+                    }
+                }
+                break;
+            case 3: 
+                System.exit(0);
+        }
+    }
+
+
+
     /**
      * Prompts the user to buy a listing
      * 
@@ -479,7 +525,15 @@ public class InputController {
      */
     private void buyListing(User user, ListingHandler listingHandler) {
         String listingId = InputValidation.readString(BUY_LISTING_PROMPT, INVALID_PROMPT);
-        Listing listing = listingHandler.getListing(UUID.fromString(listingId));
+        // CWE-229: Improper Handling of Values - validate UUID format before parsing
+        UUID listingUUID;
+        try {
+            listingUUID = UUID.fromString(listingId);
+        } catch (IllegalArgumentException e) {
+            System.out.println("Invalid listing ID format.");
+            return;
+        }
+        Listing listing = listingHandler.getListing(listingUUID);
 
         // Ensure listing exists
         if (listing == null) {
@@ -508,7 +562,15 @@ public class InputController {
      */
     private void removeListing(User user, ListingHandler listingHandler) {
         String listingId = InputValidation.readString(REMOVE_LISTING_PROMPT, INVALID_PROMPT);
-        Listing listing = listingHandler.getListing(UUID.fromString(listingId));
+        // CWE-229: Improper Handling of Values - validate UUID format before parsing
+        UUID listingUUID;
+        try {
+            listingUUID = UUID.fromString(listingId);
+        } catch (IllegalArgumentException e) {
+            System.out.println("Invalid listing ID format.");
+            return;
+        }
+        Listing listing = listingHandler.getListing(listingUUID);
 
         // Ensure listing exists
         if (listing == null) {
