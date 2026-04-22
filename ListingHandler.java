@@ -230,6 +230,45 @@ public class ListingHandler extends DatabaseHandler {
             // CWE-778: Insufficient Logging
             logger.severe("Error deleting user listings: " + e.getMessage());
         }
-
     }
+
+    /**
+    * Search for listings by title
+    * 
+    * @param
+    * @throws
+    */
+    public List<Listing> searchListingsByTitle(String listingTitle) throws SQLException {
+        if (listingTitle == null || listingTitle.isEmpty()) {
+            throw new IllegalArgumentException();
+        }
+
+        String searchListingsByTitleString = "SELECT * FROM listing WHERE title = ?";
+        PreparedStatement searchListingsByTitlePS = this.connection.prepareStatement(searchListingsByTitleString);
+
+        try {
+            searchListingsByTitlePS.setString(1, listingTitle);
+            List<Listing> listings = new ArrayList<>();
+            ResultSet resultSet = searchListingsByTitlePS.executeQuery();
+            while (resultSet.next())
+            {
+                Listing currentListing = new Listing(
+                    UUID.fromString(resultSet.getString(1)),
+                    UUID.fromString(resultSet.getString(2)),
+                    resultSet.getString(3),
+                    resultSet.getString(4),
+                    resultSet.getFloat(5));
+                listings.add(currentListing);
+            }
+
+            return listings;
+        } finally {
+            try {
+                searchListingsByTitlePS.close();
+            } catch (SQLException e) {
+                System.out.println("SQLException caught.");
+            }
+        }
+    }
+
 }
