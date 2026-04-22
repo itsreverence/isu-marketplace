@@ -14,6 +14,7 @@ import org.json.simple.parser.ParseException;
  * Abstract database handler to manage our different databases
  * CWE-1080: Source Code File with Excessive Number of Lines of Code
  * This file should stay below 1000 lines of code or be split into multiple files
+ * CWE-1062: Parent Class with References to Child Class - Compliant
  */
 public abstract class DatabaseHandler {
     protected Connection connection; // connection to the database
