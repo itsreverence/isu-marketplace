@@ -30,11 +30,11 @@ public abstract class DatabaseHandler {
     public DatabaseHandler(String databaseName) {
         this.databaseName = databaseName;
         try {
-            this.logger = initLogger();
             this.connection = DriverManager.getConnection("jdbc:sqlite:db/" + this.databaseName + ".db");
+            this.logger = initLogger();
             dropTables();
             createTable();
-            // CWE-778: Insufficient Logging 
+            // CWE-778: Insufficient Logging
             logger.info(this.databaseName + " database initialized");
         } catch (SQLException e) {
             // CWE-778: Insufficient Logging
@@ -47,8 +47,9 @@ public abstract class DatabaseHandler {
      */
     private void dropTables() {
         boolean dropTables = false;
-        try {
-            Object object = new JSONParser().parse(new FileReader("config.json"));
+        // CWE-459: Incomplete Cleanup
+        try (FileReader fileReader = new FileReader("config.json")) {
+            Object object = new JSONParser().parse(fileReader);
             JSONObject jsonObject = (JSONObject) object;
             dropTables = (boolean) jsonObject.get("dropTables");
         } catch (IOException e) {
@@ -60,9 +61,9 @@ public abstract class DatabaseHandler {
         }
 
         if (dropTables) {
-            try {
-                String query = "DROP TABLE IF EXISTS " + this.databaseName;
-                PreparedStatement preparedStatement = this.connection.prepareStatement(query);
+            String query = "DROP TABLE IF EXISTS " + this.databaseName;
+            // CWE-459: Incomplete Cleanup
+            try (PreparedStatement preparedStatement = this.connection.prepareStatement(query)) {
                 preparedStatement.setQueryTimeout(30);
                 preparedStatement.executeUpdate();
                 // CWE-778: Insufficient Logging
@@ -71,6 +72,18 @@ public abstract class DatabaseHandler {
                 // CWE-778: Insufficient Logging
                 logger.severe("Error dropping tables: " + e.getMessage());
             }
+        }
+    }
+
+    /**
+     * Clean up the database connection
+     */
+    public void cleanUp() {
+        try {
+            this.connection.close();
+        } catch (SQLException e) {
+            // CWE-778: Insufficient Logging
+            logger.severe("Error closing connection: " + e.getMessage());
         }
     }
 

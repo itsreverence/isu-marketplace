@@ -1,7 +1,7 @@
 Your Listings: Displays all of the listings that you have on the marketplace
 New Listing: Create a new listing on the marketplace
 Remove Listing: Removes the specified listing from the marketplace
-Browse Listings: Search through the current listings on the marketplace
+Browse Listings: Presents the user with options to browse or search listings
 Buy Listing: Purchase a listing that is on the marketplace
 Help: Displays some information about each command in the current menu
 Exit: Terminates the program upon the request of the user
