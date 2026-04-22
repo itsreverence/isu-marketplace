@@ -130,8 +130,6 @@ public class InputController {
             // if .login returns null, login failed.
             if (user == null) {
                 // encapsulate login operation via the same prompt
-                // CWE-778: Insufficient Logging
-                logger.info("Login failed for user " + username);
                 System.out.println(INVALID_LOGIN);
             } else {
                 // logged in
@@ -553,11 +551,15 @@ public class InputController {
 
         // Ensure listing exists
         if (listing == null) {
+            // CWE-779: Logging of Excessive Data
+            logger.fine(user.getUsername() + " attempted to buy listing " + listingId + " which does not exist");
             System.out.println("Invalid listing.");
             return;
         }
         // Ensure we are not buying our own
         if (listing.getUserId().equals(user.getId())) {
+            // CWE-779: Logging of Excessive Data
+            logger.fine(user.getUsername() + " attempted to buy listing " + listing.getId() + " which they own");
             System.out.println("You cannot buy your own listing.");
             return;
         }
@@ -590,12 +592,15 @@ public class InputController {
 
         // Ensure listing exists
         if (listing == null) {
+            // CWE-779: Logging of Excessive Data
+            logger.fine(user.getUsername() + " attempted to delete listing " + listingId + " which does not exist");
             System.out.println("Invalid listing.");
             return;
         }
         // Ensure we are deleting our own
         if (!listing.getUserId().equals(user.getId())) {
-            // TODO: Consider a statement for not revealing the listing id exists
+            // CWE-778: Insufficient Logging
+            logger.warning(user.getUsername() + " attempted to delete listing " + listing.getId() + " which they don't own");
             System.out.println("Invalid listing.");
             return;
         }

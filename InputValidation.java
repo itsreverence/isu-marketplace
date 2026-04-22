@@ -39,6 +39,7 @@ public class InputValidation {
             // normalizeString;
             stringResult = Normalizer.normalize(stringResult, Form.NFKC);
             if (stringResult == null || stringResult.isEmpty() || stringResult.isBlank()) {
+                // CWE-779: Logging of Excessive Data
                 logger.fine("Invalid string input: " + stringResult);
                 System.out.println(failedString);
             } else {
@@ -63,6 +64,7 @@ public class InputValidation {
             try {
                 int choice = SCANNER.nextInt();
                 if (choice < 1 || choice > maxVal) {
+                    // CWE-779: Logging of Excessive Data
                     logger.fine("Invalid int input: " + choice);
                     System.out.println(failedString);
                 } else {
@@ -93,6 +95,7 @@ public class InputValidation {
             try {
                 float floatResult = SCANNER.nextFloat();
                 if (floatResult < 0) {
+                    // CWE-779: Logging of Excessive Data
                     logger.fine("Invalid float input: " + floatResult);
                     System.out.println(failedString);
                 } else {
