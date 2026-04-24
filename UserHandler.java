@@ -238,6 +238,34 @@ public class UserHandler extends DatabaseHandler {
         return user;
     }
 
+     /**
+     * Get a user by ID
+     * 
+     * @param id The ID of the user
+     * @return The user
+     */
+    public synchronized User getUser(UUID id) {
+        User user = null;
+        String stringID = id.toString();
+        String getUserQuery = "SELECT * FROM user where id = ?";
+        // CWE-459: Incomplete Cleanup
+        try (PreparedStatement preparedStatement = this.connection.prepareStatement(getUserQuery)) {
+            preparedStatement.setString(1, stringID);
+            preparedStatement.setQueryTimeout(30);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            if (resultSet.next()) {
+                String username = resultSet.getString("username");
+                Role role = Role.valueOf(resultSet.getString("role"));
+                user = new User(id, username, role);
+            }
+        } catch (SQLException e) {
+            // CWE-778: Insufficient Logging
+            logger.severe("Error getting user: " + e.getMessage());
+        }
+        return user;
+
+    }
+
     /**
      * Update the role of a user
      * 

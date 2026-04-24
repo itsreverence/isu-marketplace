@@ -231,6 +231,7 @@ public class InputController {
      * @throws SQLException if there is an error accessing the database
      */
     public boolean adminMenu(User user, ListingHandler listingHandler, UserHandler userHandler) throws SQLException {
+        System.out.println("\n" + MENU_LINES);
         System.out.println("1.) Your Listings");
         System.out.println("2.) New Listing");
         System.out.println("3.) Remove Listing");
@@ -240,6 +241,7 @@ public class InputController {
         System.out.println("7.) Manage Listings");
         System.out.println("8.) Help");
         System.out.println("9.) Exit");
+        System.out.println(MENU_LINES + "\n");
 
         int choice = InputValidation.readInt(INPUT_PROMPT, INVALID_PROMPT, 9);
         boolean returnValue = false;
@@ -266,11 +268,11 @@ public class InputController {
                 returnValue = true;
                 break;
             case 6:
-                manageUsers(userHandler, listingHandler);
+                manageUsers(userHandler, listingHandler, user);
                 returnValue = true;
                 break;
             case 7:
-                manageListings(listingHandler);
+                manageListings(listingHandler, userHandler, user);
                 returnValue = true;
                 break;
             case 8:
@@ -290,12 +292,14 @@ public class InputController {
      * @param listingHandler the listing handler to use
      * @throws SQLException if there is an error accessing the database
      */
-    private void manageUsers(UserHandler userHandler, ListingHandler listingHandler) throws SQLException {
+    private void manageUsers(UserHandler userHandler, ListingHandler listingHandler, User user) throws SQLException {
+        System.out.println("\n" + MENU_LINES);
         System.out.println("1.) View Users");
         System.out.println("2.) Update User Role");
         System.out.println("3.) Delete User");
         System.out.println("4.) Help");
         System.out.println("5.) Back");
+        System.out.println(MENU_LINES + "\n");
 
         int choice = InputValidation.readInt(INPUT_PROMPT, INVALID_PROMPT, 5);
 
@@ -307,11 +311,11 @@ public class InputController {
                 updateUserRole(userHandler);
                 break;
             case 3:
-                deleteUser(userHandler, listingHandler);
+                deleteUser(userHandler, listingHandler, user);
                 break;
             case 4:
                 help("manageUsers");
-                manageUsers(userHandler, listingHandler);
+                manageUsers(userHandler, listingHandler, user);
                 break;
             case 5:
                 return;
@@ -325,7 +329,7 @@ public class InputController {
      * @param listingHandler the listing handler to use
      * @throws SQLException if there is an error accessing the database
      */
-    private void manageListings(ListingHandler listingHandler) throws SQLException {
+    private void manageListings(ListingHandler listingHandler, UserHandler userHandler, User user) throws SQLException {
         System.out.println("1.) Delete Listing");
         System.out.println("2.) Help");
         System.out.println("3.) Back");
@@ -333,11 +337,11 @@ public class InputController {
         int choice = InputValidation.readInt(INPUT_PROMPT, INVALID_PROMPT, 3);
         switch (choice) {
             case 1:
-                deleteListing(listingHandler);
+                deleteListing(listingHandler, userHandler, user);
                 break;
             case 2:
                 help("manageListings");
-                manageListings(listingHandler);
+                manageListings(listingHandler, userHandler, user);
                 break;
             case 3:
                 return;
@@ -351,6 +355,7 @@ public class InputController {
      */
     private void viewUsers(UserHandler userHandler) {
         List<User> users = userHandler.getUsers();
+        System.out.println("There are " + users.size() + " user(s) total.");
         bulkPrintList(users);
     }
 
@@ -360,7 +365,7 @@ public class InputController {
      * @param listingHandler the listing handler to use
      * @throws SQLException if there is an error accessing the database
      */
-    private void deleteListing(ListingHandler listingHandler) throws SQLException {
+    private void deleteListing(ListingHandler listingHandler, UserHandler userHandler, User user) throws SQLException {
         String listingId = InputValidation.readString(REMOVE_LISTING_PROMPT, INVALID_PROMPT);
         // CWE-229: Improper Handling of Values - validate UUID format before parsing
         UUID listingUUID;
@@ -371,8 +376,10 @@ public class InputController {
             return;
         }
         Listing listing = listingHandler.getListing(listingUUID);
-        if (listing == null) {
-            System.out.println("The specified listing does not exist.");
+        User userListingToDelete = userHandler.getUser(listing.getUserId());
+        // if invalid listing or if we are a member deleting an admin
+        if (listing == null || (user.getRole().equals(Role.MEMBER) && userListingToDelete.getRole().equals(Role.ADMIN))) {
+            System.out.println("Invalid listing.");
             return;
         }
         listingHandler.removeListing(listing);
@@ -414,11 +421,16 @@ public class InputController {
      * @param listingHandler the listing handler to use
      * @throws SQLException if there is an error accessing the database
      */
-    private void deleteUser(UserHandler userHandler, ListingHandler listingHandler) throws SQLException {
+    private void deleteUser(UserHandler userHandler, ListingHandler listingHandler, User user) throws SQLException {
         String username = InputValidation.readString(DELETE_USER_USERNAME_PROMPT, INVALID_PROMPT);
+        User userToDelete = userHandler.getUser(username);
+        if (userToDelete == null || userToDelete.getRole().equals(Role.ADMIN) || user.getId().equals(userToDelete.getId())) {
+            System.out.println("Invalid user.");
+            return;
+        }
         userHandler.deleteUser(username);
-        listingHandler.deleteUserListings(username);
 
+        listingHandler.deleteUserListings(username);
         System.out.println("The specified user " + username + " has been deleted.");
 
         // CWE-778: Insufficient Logging
@@ -468,6 +480,7 @@ public class InputController {
      */
     private void browseListings(ListingHandler listingHandler) {
         List<Listing> listings = listingHandler.getListings();
+        System.out.println("There are" + listings.size() + "listing(s) total.");
         bulkPrintList(listings);
     }
 
