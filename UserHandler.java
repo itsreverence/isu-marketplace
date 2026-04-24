@@ -26,7 +26,10 @@ public class UserHandler extends DatabaseHandler {
 
 
     private static final int MAX_FAILED_ATTEMPTS = 5; //CWE-307
+    private static final int NO_LOG_REGISTER_ATTEMPTS = 3; // Number of failed register attempts before logging
     private int loginAttempts = 0; //CWE 307
+    private int registerAttempts = 0; // Counter for failed register attempts
+    
 
     /**
      * Constructor for the UserHandler class
@@ -107,6 +110,10 @@ public class UserHandler extends DatabaseHandler {
      * @return The new user
      */
     public synchronized User register(String username, String password, boolean isAdmin) {
+        // CWE-779: Logging of Excessive Data
+        if (registerAttempts >= NO_LOG_REGISTER_ATTEMPTS) {
+            logger.warning("User " + sanitizeForLog(username) + " has failed to register " + registerAttempts + " times");
+        }
         User user = null;
         String checkUsernameQuery = "SELECT * FROM user WHERE username = ?";
         String insertUserQuery = "INSERT INTO user (id, username, passwordHash, role) VALUES (?, ?, ?, ?)";
@@ -117,6 +124,9 @@ public class UserHandler extends DatabaseHandler {
             ResultSet checkUsernameResultSet = checkUsernamePreparedStatement.executeQuery();
             if (checkUsernameResultSet.next()) {
                 System.err.println("Username already exists, please try again.");
+                // CWE-779: Logging of Excessive Data
+                logger.fine("Username " + sanitizeForLog(username) + " already exists");
+                registerAttempts++;
                 return null;
             }
             UUID id = UUID.randomUUID();
@@ -131,6 +141,7 @@ public class UserHandler extends DatabaseHandler {
             user = new User(id, username, userRole);
             // CWE-778: Insufficient Logging
             logger.info("User " + sanitizeForLog(username) + " registered");
+            registerAttempts = 0;
         } catch (SQLException e) {
             // CWE-778: Insufficient Logging
             logger.severe("Error registering user: " + e.getMessage());
@@ -149,7 +160,7 @@ public class UserHandler extends DatabaseHandler {
         //CWE 307
         if (loginAttempts >= MAX_FAILED_ATTEMPTS) {
             System.out.println("Max login attempts reached.");
-            logger.warning("Max login attempts reached.");
+            logger.warning("Max login attempts reached for " + sanitizeForLog(username));
             return null;
         }
         User user = null;
@@ -166,15 +177,19 @@ public class UserHandler extends DatabaseHandler {
                     UUID id = UUID.fromString(resultSet.getString("id"));
                     Role role = Role.valueOf(resultSet.getString("role"));
                     user = new User(id, username, role);
+                    // CWE-778: Insufficient Logging
+                    logger.info("User " + sanitizeForLog(username) + " logged in successfully");
                     loginAttempts = 0; //CWE 307
                 } else {
+                    // CWE-779: Logging of Excessive Data
+                    logger.fine("Username " + sanitizeForLog(username) + " failed to login");
                     loginAttempts++; //CWE 307
                 }
             } else {
+                // CWE-779: Logging of Excessive Data
+                logger.fine("Username " + sanitizeForLog(username) + " does not exist");
                 loginAttempts++; //CWE 307
             }
-            // CWE-778: Insufficient Logging
-            logger.info("User " + sanitizeForLog(username) + " logged in");
         } catch (SQLTimeoutException e) {
             // CWE-778: Insufficient Logging
             logger.severe("Error logging in: " + e.getMessage());

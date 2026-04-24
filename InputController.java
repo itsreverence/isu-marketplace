@@ -65,12 +65,26 @@ public class InputController {
                                                                                                   // user they want to
                                                                                                   // delete
 
-    private static final String INVALID_PROMPT = "Invalid operation, please try again."; // prompt for the user to enter
+    //private static final String INVALID_PROMPT = "Invalid operation, please try again."; // prompt for the user to enter
                                                                                          // an invalid operation
     private static final String MENU_LINES = "--------------------"; // lines to separate menu content
 
+    private static final String INVALID_LOGIN = "Login failed, please try again."; // prompt for when user login fails
 
+    private static final String INVALID_MENU_CHOICE = "Invalid choice, please try again."; // prompt for when user enters invalid menu choice integer
+
+    private static final String INVALID_USERNAME = "Username cannot be empty, please try again."; // prompt for when user enters empty username
     
+    private static final String INVALID_PASSWORD = "Password cannot be empty, please try again."; // prompt for when user enters empty password
+
+    private static final String INVALID_LISTING_ID = "Listing ID cannot be empty, please try again."; // prompt for when user enters empty listing ID
+
+    private static final String INVALID_LISTING_TITLE = "Listing title cannot be empty, please try again."; // prompt for when user enters empty listing title
+
+    private static final String INVALID_LISTING_DESCRIPTION = "Listing description cannot be empty, please try again."; // prompt for when user enters empty listing description
+
+    private static final String INVALID_LISTING_PRICE = "Listing price cannot be negative, please try again."; // prompt for when user enters invalid listing price
+
     public InputController() {
         this.logger = initLogger();
     }
@@ -89,7 +103,7 @@ public class InputController {
         System.out.println("2.) Register");
         System.out.println("3.) Quit");
         System.out.println(MENU_LINES + "\n");
-        int choice = InputValidation.readInt(INPUT_PROMPT, INVALID_PROMPT, 3);
+        int choice = InputValidation.readInt(INPUT_PROMPT, INVALID_MENU_CHOICE, 3);
 
         switch (choice) {
             case 1:
@@ -114,15 +128,13 @@ public class InputController {
     private User login(UserHandler userHandler) {
         // CWE-1095: Loop Condition Value Update within the Loop
         while (true) {
-            String username = InputValidation.readString(USERNAME_PROMPT, INVALID_PROMPT);
-            String password = InputValidation.readString(PASSWORD_PROMPT, INVALID_PROMPT);
+            String username = InputValidation.readString(USERNAME_PROMPT, INVALID_USERNAME);
+            String password = InputValidation.readString(PASSWORD_PROMPT, INVALID_PASSWORD);
             User user = userHandler.login(username, password);
             // if .login returns null, login failed.
             if (user == null) {
                 // encapsulate login operation via the same prompt
-                // CWE-778: Insufficient Logging
-                logger.info("Login failed for user " + username);
-                System.out.println(INVALID_PROMPT);
+                System.out.println(INVALID_LOGIN);
             } else {
                 // logged in
                 System.out.println("\nWelcome back, " + user.getUsername() + "!");
@@ -143,8 +155,8 @@ public class InputController {
     private User register(UserHandler userHandler) {
         // CWE-1095: Loop Condition Value Update within the Loop
         while (true) {
-            String username = InputValidation.readString(USERNAME_PROMPT, INVALID_PROMPT);
-            String password = InputValidation.readString(PASSWORD_PROMPT, INVALID_PROMPT);
+            String username = InputValidation.readString(USERNAME_PROMPT, INVALID_USERNAME);
+            String password = InputValidation.readString(PASSWORD_PROMPT, INVALID_PASSWORD);
             User user = userHandler.register(username, password, false);
             if (user != null) {
                 System.out.println("\nWelcome, " + user.getUsername() + "!");
@@ -180,7 +192,7 @@ public class InputController {
                 System.out.println("7.) Exit");
                 System.out.println(MENU_LINES + "\n");
     
-                int choice = InputValidation.readInt(INPUT_PROMPT, INVALID_PROMPT, 7);
+                int choice = InputValidation.readInt(INPUT_PROMPT, INVALID_MENU_CHOICE, 7);
                 boolean returnValue = false;
     
                 switch (choice) {
@@ -243,7 +255,7 @@ public class InputController {
         System.out.println("9.) Exit");
         System.out.println(MENU_LINES + "\n");
 
-        int choice = InputValidation.readInt(INPUT_PROMPT, INVALID_PROMPT, 9);
+        int choice = InputValidation.readInt(INPUT_PROMPT, INVALID_MENU_CHOICE, 9);
         boolean returnValue = false;
 
         switch (choice) {
@@ -301,7 +313,7 @@ public class InputController {
         System.out.println("5.) Back");
         System.out.println(MENU_LINES + "\n");
 
-        int choice = InputValidation.readInt(INPUT_PROMPT, INVALID_PROMPT, 5);
+        int choice = InputValidation.readInt(INPUT_PROMPT, INVALID_MENU_CHOICE, 5);
 
         switch (choice) {
             case 1:
@@ -334,7 +346,7 @@ public class InputController {
         System.out.println("2.) Help");
         System.out.println("3.) Back");
 
-        int choice = InputValidation.readInt(INPUT_PROMPT, INVALID_PROMPT, 3);
+        int choice = InputValidation.readInt(INPUT_PROMPT, INVALID_MENU_CHOICE, 3);
         switch (choice) {
             case 1:
                 deleteListing(listingHandler, userHandler, user);
@@ -366,7 +378,7 @@ public class InputController {
      * @throws SQLException if there is an error accessing the database
      */
     private void deleteListing(ListingHandler listingHandler, UserHandler userHandler, User user) throws SQLException {
-        String listingId = InputValidation.readString(REMOVE_LISTING_PROMPT, INVALID_PROMPT);
+        String listingId = InputValidation.readString(REMOVE_LISTING_PROMPT, INVALID_LISTING_ID);
         // CWE-229: Improper Handling of Values - validate UUID format before parsing
         UUID listingUUID;
         try {
@@ -396,10 +408,10 @@ public class InputController {
      * @throws SQLException if there is an error accessing the database
      */
     private void updateUserRole(UserHandler userHandler) throws SQLException {
-        String username = InputValidation.readString(UPDATE_USER_ROLE_USERNAME_PROMPT, INVALID_PROMPT);
+        String username = InputValidation.readString(UPDATE_USER_ROLE_USERNAME_PROMPT, INVALID_USERNAME);
         System.out.println("1.) Member");
         System.out.println("2.) Admin");
-        int choice = InputValidation.readInt(UPDATE_USER_ROLE_PROMPT, INVALID_PROMPT, 2);
+        int choice = InputValidation.readInt(UPDATE_USER_ROLE_PROMPT, INVALID_MENU_CHOICE, 2);
         switch (choice) {
             case 1:
                 userHandler.updateUserRole(username, Role.MEMBER);
@@ -422,7 +434,7 @@ public class InputController {
      * @throws SQLException if there is an error accessing the database
      */
     private void deleteUser(UserHandler userHandler, ListingHandler listingHandler, User user) throws SQLException {
-        String username = InputValidation.readString(DELETE_USER_USERNAME_PROMPT, INVALID_PROMPT);
+        String username = InputValidation.readString(DELETE_USER_USERNAME_PROMPT, INVALID_USERNAME);
         User userToDelete = userHandler.getUser(username);
         if (userToDelete == null || userToDelete.getRole().equals(Role.ADMIN) || user.getId().equals(userToDelete.getId())) {
             System.out.println("Invalid user.");
@@ -456,9 +468,9 @@ public class InputController {
      * @param listingHandler the listing handler to use
      */
     private void newListing(User user, ListingHandler listingHandler) {
-        String title = InputValidation.readString(LISTING_TITLE_PROMPT, INVALID_PROMPT);
-        String description = InputValidation.readString(LISTING_DESC_PROMPT, INVALID_PROMPT);
-        float price = InputValidation.readFloat(LISTING_PRICE_PROMPT, INVALID_PROMPT);
+        String title = InputValidation.readString(LISTING_TITLE_PROMPT, INVALID_LISTING_TITLE);
+        String description = InputValidation.readString(LISTING_DESC_PROMPT, INVALID_LISTING_DESCRIPTION);
+        float price = InputValidation.readFloat(LISTING_PRICE_PROMPT, INVALID_LISTING_PRICE);
 
         // create listing with validated input
         // CWE-229: Improper Handling of Values - check return value before use
@@ -491,14 +503,14 @@ public class InputController {
         System.out.println("3.) Help");
         System.out.println("4.) Back");
         System.out.println(MENU_LINES + "\n");
-        int choice = InputValidation.readInt(INPUT_PROMPT, INVALID_PROMPT, 4);
+        int choice = InputValidation.readInt(INPUT_PROMPT, INVALID_MENU_CHOICE, 4);
         List<Listing> listings;
         switch (choice) {
             case 1:
                 browseListings(listingHandler);
                 break;
             case 2: 
-                String listingTitle = InputValidation.readString(LISTING_TITLE_PROMPT, INVALID_PROMPT);
+                String listingTitle = InputValidation.readString(LISTING_TITLE_PROMPT, INVALID_LISTING_TITLE);
                 listings = listingHandler.searchListingsByTitle(listingTitle);
                 //System.out.println();
                 if(listings.isEmpty()) {
@@ -526,7 +538,7 @@ public class InputController {
      * @throws SQLException if there is an error accessing the database
      */
     private void buyListing(User user, ListingHandler listingHandler) {
-        String listingId = InputValidation.readString(BUY_LISTING_PROMPT, INVALID_PROMPT);
+        String listingId = InputValidation.readString(BUY_LISTING_PROMPT, INVALID_LISTING_ID);
         // CWE-229: Improper Handling of Values - validate UUID format before parsing
         UUID listingUUID;
         try {
@@ -539,11 +551,15 @@ public class InputController {
 
         // Ensure listing exists
         if (listing == null) {
+            // CWE-779: Logging of Excessive Data
+            logger.fine(user.getUsername() + " attempted to buy listing " + listingId + " which does not exist");
             System.out.println("Invalid listing.");
             return;
         }
         // Ensure we are not buying our own
         if (listing.getUserId().equals(user.getId())) {
+            // CWE-779: Logging of Excessive Data
+            logger.fine(user.getUsername() + " attempted to buy listing " + listing.getId() + " which they own");
             System.out.println("You cannot buy your own listing.");
             return;
         }
@@ -563,7 +579,7 @@ public class InputController {
      * @throws SQLException if there is an error accessing the database
      */
     private void removeListing(User user, ListingHandler listingHandler) {
-        String listingId = InputValidation.readString(REMOVE_LISTING_PROMPT, INVALID_PROMPT);
+        String listingId = InputValidation.readString(REMOVE_LISTING_PROMPT, INVALID_LISTING_ID);
         // CWE-229: Improper Handling of Values - validate UUID format before parsing
         UUID listingUUID;
         try {
@@ -576,11 +592,15 @@ public class InputController {
 
         // Ensure listing exists
         if (listing == null) {
+            // CWE-779: Logging of Excessive Data
+            logger.fine(user.getUsername() + " attempted to delete listing " + listingId + " which does not exist");
             System.out.println("Invalid listing.");
             return;
         }
         // Ensure we are deleting our own
         if (!listing.getUserId().equals(user.getId())) {
+            // CWE-778: Insufficient Logging
+            logger.warning(user.getUsername() + " attempted to delete listing " + listing.getId() + " which they don't own");
             System.out.println("Invalid listing.");
             return;
         }

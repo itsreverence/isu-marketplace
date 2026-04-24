@@ -39,6 +39,8 @@ public class InputValidation {
             // normalizeString;
             stringResult = Normalizer.normalize(stringResult, Form.NFKC);
             if (stringResult == null || stringResult.isEmpty() || stringResult.isBlank()) {
+                // CWE-779: Logging of Excessive Data
+                logger.fine("Invalid string input: " + stringResult);
                 System.out.println(failedString);
             } else {
                 return stringResult;
@@ -62,6 +64,8 @@ public class InputValidation {
             try {
                 int choice = SCANNER.nextInt();
                 if (choice < 1 || choice > maxVal) {
+                    // CWE-779: Logging of Excessive Data
+                    logger.fine("Invalid int input: " + choice);
                     System.out.println(failedString);
                 } else {
                     // if we get here, we have a good number!
@@ -69,7 +73,7 @@ public class InputValidation {
                 }
             } catch (InputMismatchException e) {
                 // CWE-778: Insufficient Logging
-                logger.severe("Error reading int: " + e.getMessage());
+                logger.fine("Error reading int: " + e.getMessage());
                 System.out.println(failedString);
             } finally {
                 SCANNER.nextLine(); // consume
@@ -91,13 +95,15 @@ public class InputValidation {
             try {
                 float floatResult = SCANNER.nextFloat();
                 if (floatResult < 0) {
+                    // CWE-779: Logging of Excessive Data
+                    logger.fine("Invalid float input: " + floatResult);
                     System.out.println(failedString);
                 } else {
                     return floatResult;
                 }
             } catch (InputMismatchException e) {
                 // CWE-778: Insufficient Logging
-                logger.severe("Error reading float: " + e.getMessage());
+                logger.fine("Error reading float: " + e.getMessage());
                 System.out.println(failedString);
             } finally {
                 SCANNER.nextLine(); // consume
