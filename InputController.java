@@ -1,6 +1,7 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Scanner;
@@ -131,6 +132,11 @@ public class InputController {
             String username = InputValidation.readString(USERNAME_PROMPT, INVALID_USERNAME);
             String password = InputValidation.readString(PASSWORD_PROMPT, INVALID_PASSWORD);
             User user = userHandler.login(username, password);
+            // CWE-307 Need to check if the user has reached the login attempts.
+            if (userHandler.isLockedOut()) {
+                System.out.println("Too many failed login attempts. Exiting.");
+                System.exit(0);
+            }
             // if .login returns null, login failed.
             if (user == null) {
                 // encapsulate login operation via the same prompt
@@ -243,6 +249,7 @@ public class InputController {
      * @throws SQLException if there is an error accessing the database
      */
     public boolean adminMenu(User user, ListingHandler listingHandler, UserHandler userHandler) throws SQLException {
+        requireAdmin(user); //CWE-306
         System.out.println("\n" + MENU_LINES);
         System.out.println("1.) Your Listings");
         System.out.println("2.) New Listing");
@@ -305,6 +312,7 @@ public class InputController {
      * @throws SQLException if there is an error accessing the database
      */
     private void manageUsers(UserHandler userHandler, ListingHandler listingHandler, User user) throws SQLException {
+        requireAdmin(user); //CWE-306
         System.out.println("\n" + MENU_LINES);
         System.out.println("1.) View Users");
         System.out.println("2.) Update User Role");
@@ -342,6 +350,7 @@ public class InputController {
      * @throws SQLException if there is an error accessing the database
      */
     private void manageListings(ListingHandler listingHandler, UserHandler userHandler, User user) throws SQLException {
+        requireAdmin(user); //CWE-306
         System.out.println("1.) Delete Listing");
         System.out.println("2.) Help");
         System.out.println("3.) Back");
@@ -378,6 +387,7 @@ public class InputController {
      * @throws SQLException if there is an error accessing the database
      */
     private void deleteListing(ListingHandler listingHandler, UserHandler userHandler, User user) throws SQLException {
+        requireAdmin(user); //CWE-306
         String listingId = InputValidation.readString(REMOVE_LISTING_PROMPT, INVALID_LISTING_ID);
         // CWE-229: Improper Handling of Values - validate UUID format before parsing
         UUID listingUUID;
@@ -434,6 +444,7 @@ public class InputController {
      * @throws SQLException if there is an error accessing the database
      */
     private void deleteUser(UserHandler userHandler, ListingHandler listingHandler, User user) throws SQLException {
+        requireAdmin(user); //CWE-306
         String username = InputValidation.readString(DELETE_USER_USERNAME_PROMPT, INVALID_USERNAME);
         User userToDelete = userHandler.getUser(username);
         if (userToDelete == null || userToDelete.getRole().equals(Role.ADMIN) || user.getId().equals(userToDelete.getId())) {
@@ -492,7 +503,7 @@ public class InputController {
      */
     private void browseListings(ListingHandler listingHandler) {
         List<Listing> listings = listingHandler.getListings();
-        System.out.println("There are" + listings.size() + "listing(s) total.");
+        System.out.println("There are " + listings.size() + "listing(s) total.");
         bulkPrintList(listings);
     }
 
@@ -658,16 +669,29 @@ public class InputController {
     }
 
     private static <E> void bulkPrintList(List<E> itemList) {
-        if (itemList == null || itemList.size() == 0) return;
+        if (itemList == null || itemList.size() == 0)
+            return;
 
         System.out.println(MENU_LINES);
-        for (int i=0; i<itemList.size(); i++) {
+        for (int i = 0; i < itemList.size(); i++) {
             System.out.println(itemList.get(i));
             if (i < itemList.size() - 1) {
                 System.out.println();
             }
         }
         System.out.println(MENU_LINES);
+    }
+    
+    /**
+     * CWE-306 Need to check for critical functions if the user is an admin
+     * @param user
+     */
+    private void requireAdmin(User user) {
+        if (user == null || user.getRole() != Role.ADMIN) {
+            logger.warning("Unauthorized admin access attempt");
+            System.out.println("Access denied.");
+            System.exit(0);
+        }
     }
 
     /**
