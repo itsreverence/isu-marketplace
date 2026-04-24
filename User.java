@@ -69,4 +69,17 @@ public class User {
     public void setRole(Role role) {
         this.role = role;
     }
+
+    /**
+     * toString implementation for User
+     * 
+     * @return A String representation of this User
+     */
+    public String toString() {
+        StringBuilder temp = new StringBuilder();
+        temp.append("ID: " + this.id.toString() + "\n");
+        temp.append("Username: " + this.username + "\n");
+        temp.append("Role: " + this.role.toString());
+        return temp.toString();
+    }
 }

@@ -100,4 +100,22 @@ public class Listing {
     public void setPrice(float price) {
         this.price = price;
     }
+
+    /**
+     * toString implementation for Listing
+     * 
+     * @return A string representation of this listing.
+     */
+    public String toString() {
+        StringBuilder temp = new StringBuilder();
+        temp.append("Listing ID: " + this.id.toString() + "\n");
+        temp.append("Title: " + this.title + "\n");
+        temp.append("Description: " + this.description + "\n");
+        temp.append("Price: " + toMoney(this.price));
+        return temp.toString();
+    }
+
+    private static String toMoney(float price) {
+        return String.format("$%.2f", price);
+    }
 }

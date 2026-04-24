@@ -67,6 +67,7 @@ public class InputController {
 
     private static final String INVALID_PROMPT = "Invalid operation, please try again."; // prompt for the user to enter
                                                                                          // an invalid operation
+    private static final String MENU_LINES = "--------------------"; // lines to separate menu content
 
 
     
@@ -82,9 +83,12 @@ public class InputController {
      */
     public User loginOrRegister(UserHandler userHandler) {
         User user = null;
+        System.out.println("\nWelcome to the ISU Marketplace!");
+        System.out.println(MENU_LINES);
         System.out.println("1.) Login");
         System.out.println("2.) Register");
         System.out.println("3.) Quit");
+        System.out.println(MENU_LINES + "\n");
         int choice = InputValidation.readInt(INPUT_PROMPT, INVALID_PROMPT, 3);
 
         switch (choice) {
@@ -121,7 +125,7 @@ public class InputController {
                 System.out.println(INVALID_PROMPT);
             } else {
                 // logged in
-                System.out.println("Welcome back, " + user.getUsername() + "!");
+                System.out.println("\nWelcome back, " + user.getUsername() + "!");
 
                 // CWE-778: Insufficient Logging
                 logger.info("User " + user.getUsername() + " logged in");
@@ -141,9 +145,9 @@ public class InputController {
         while (true) {
             String username = InputValidation.readString(USERNAME_PROMPT, INVALID_PROMPT);
             String password = InputValidation.readString(PASSWORD_PROMPT, INVALID_PROMPT);
-            User user = userHandler.register(username, password);
+            User user = userHandler.register(username, password, false);
             if (user != null) {
-                System.out.println("Welcome, " + user.getUsername() + "!");
+                System.out.println("\nWelcome, " + user.getUsername() + "!");
                 // CWE-778: Insufficient Logging
                 logger.info("User " + user.getUsername() + " registered");
                 return user;
@@ -166,6 +170,7 @@ public class InputController {
             if (user.getRole() == Role.ADMIN) {
                 return adminMenu(user, listingHandler, userHandler);
             } else {
+                System.out.println("\n" + MENU_LINES);
                 System.out.println("1.) Your Listings");
                 System.out.println("2.) New Listing");
                 System.out.println("3.) Remove Listing");
@@ -173,6 +178,7 @@ public class InputController {
                 System.out.println("5.) Buy Listing");
                 System.out.println("6.) Help");
                 System.out.println("7.) Exit");
+                System.out.println(MENU_LINES + "\n");
     
                 int choice = InputValidation.readInt(INPUT_PROMPT, INVALID_PROMPT, 7);
                 boolean returnValue = false;
@@ -345,12 +351,7 @@ public class InputController {
      */
     private void viewUsers(UserHandler userHandler) {
         List<User> users = userHandler.getUsers();
-        for (User user : users) {
-            System.out.println("ID: " + user.getId());
-            System.out.println("Username: " + user.getUsername());
-            System.out.println("Role: " + user.getRole());
-            System.out.println("");
-        }
+        bulkPrintList(users);
     }
 
     /**
@@ -432,12 +433,8 @@ public class InputController {
      */
     private void userListings(User user, ListingHandler listingHandler) {
         List<Listing> listings = listingHandler.getUserListings(user);
-        for (Listing listing : listings) {
-            System.out.println("Title: " + listing.getTitle());
-            System.out.println("Description: " + listing.getDescription());
-            System.out.println("Price: " + listing.getPrice());
-            System.out.println("");
-        }
+        System.out.println("\nYou have " + listings.size() + " listing(s).\n");
+        bulkPrintList(listings);
     }
 
     /**
@@ -458,7 +455,7 @@ public class InputController {
             System.out.println("Failed to create listing, please try again.");
             return;
         }
-        System.out.println("Your listing has been published to the marketplace.");
+        System.out.println("\nYour listing has been published to the marketplace.");
 
         // CWE-778: Insufficient Logging
         logger.info(user.getUsername() + " created listing " + listing.getId());
@@ -471,20 +468,16 @@ public class InputController {
      */
     private void browseListings(ListingHandler listingHandler) {
         List<Listing> listings = listingHandler.getListings();
-        for (Listing listing : listings) {
-            System.out.println("ID: " + listing.getId());
-            System.out.println("Title: " + listing.getTitle());
-            System.out.println("Description: " + listing.getDescription());
-            System.out.println("Price: " + listing.getPrice());
-            System.out.println("");
-        }
+        bulkPrintList(listings);
     }
 
     private void handleBrowseMenu(ListingHandler listingHandler) throws SQLException{
+        System.out.println(MENU_LINES);
         System.out.println("1.) Browse all listings");
         System.out.println("2.) Search for a listing by title");
         System.out.println("3.) Help");
         System.out.println("4.) Back");
+        System.out.println(MENU_LINES + "\n");
         int choice = InputValidation.readInt(INPUT_PROMPT, INVALID_PROMPT, 4);
         List<Listing> listings;
         switch (choice) {
@@ -498,13 +491,7 @@ public class InputController {
                 if(listings.isEmpty()) {
                     System.out.println("No listings found with that title.");
                 } else {
-                    for (Listing listing : listings) {
-                        System.out.println("ID: " + listing.getId());
-                        System.out.println("Title: " + listing.getTitle());
-                        System.out.println("Description: " + listing.getDescription());
-                        System.out.println("Price: " + listing.getPrice());
-                        System.out.println("");
-                    }
+                    bulkPrintList(listings);
                 }
                 break;
             case 3:
@@ -581,7 +568,6 @@ public class InputController {
         }
         // Ensure we are deleting our own
         if (!listing.getUserId().equals(user.getId())) {
-            // TODO: Consider a statement for not revealing the listing id exists
             System.out.println("Invalid listing.");
             return;
         }
@@ -636,6 +622,19 @@ public class InputController {
             System.err.println("Error initializing logger: " + e.getMessage());
         }
         return null;
+    }
+
+    private static <E> void bulkPrintList(List<E> itemList) {
+        if (itemList == null || itemList.size() == 0) return;
+
+        System.out.println(MENU_LINES);
+        for (int i=0; i<itemList.size(); i++) {
+            System.out.println(itemList.get(i));
+            if (i < itemList.size() - 1) {
+                System.out.println();
+            }
+        }
+        System.out.println(MENU_LINES);
     }
 
     /**
