@@ -116,6 +116,19 @@ public class ListingHandler extends DatabaseHandler {
      * @return The new listing
      */
     public synchronized Listing createListing(User user, String title, String description, float price) {
+        //CWE-770 Adding a check to see if the user has reached the max amount of listings
+        try{
+            if(isListingLimitReached(user)){
+                System.out.println("Listing limit reached. Remove an exisiting limit first.");
+                logger.warning("Listing limit reached for user: " + user.getUsername());
+                return null;
+            }
+        }
+        catch (SQLException e) {
+            logger.severe("Error counting user listings: " + e.getMessage());
+            return null;
+        }
+        
         Listing listing = null;
         String createListingQuery = "INSERT INTO listing (id, userId, title, description, price) VALUES (?, ?, ?, ?, ?)";
         // CWE-459: Incomplete Cleanup
@@ -254,14 +267,13 @@ public class ListingHandler extends DatabaseHandler {
             searchListingsByTitlePS.setString(1, listingTitle);
             List<Listing> listings = new ArrayList<>();
             ResultSet resultSet = searchListingsByTitlePS.executeQuery();
-            while (resultSet.next())
-            {
+            while (resultSet.next()) {
                 Listing currentListing = new Listing(
-                    UUID.fromString(resultSet.getString(1)),
-                    UUID.fromString(resultSet.getString(2)),
-                    resultSet.getString(3),
-                    resultSet.getString(4),
-                    resultSet.getFloat(5));
+                        UUID.fromString(resultSet.getString(1)),
+                        UUID.fromString(resultSet.getString(2)),
+                        resultSet.getString(3),
+                        resultSet.getString(4),
+                        resultSet.getFloat(5));
                 listings.add(currentListing);
             }
 
@@ -272,6 +284,23 @@ public class ListingHandler extends DatabaseHandler {
             } catch (SQLException e) {
                 System.out.println("SQLException caught.");
             }
+        }
+    }
+    
+    private static final int MAX_LISTING_PER_USER = 10;
+
+    /**
+     * CWE-770 Prevent unbounded resource allocation per user
+     * @param userId
+     * @return
+     * @throws SQLException
+     */
+    private synchronized boolean isListingLimitReached(User user) throws SQLException {
+        String query = "SELECT COUNT(*) FROM listing WHERE userId = ?";
+        try (PreparedStatement ps = this.connection.prepareStatement(query)) {
+            ps.setString(1, user.getId().toString());
+            ps.setQueryTimeout(30);
+            return ps.executeQuery().getInt(1) >= MAX_LISTING_PER_USER;
         }
     }
 

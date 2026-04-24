@@ -294,6 +294,10 @@ public class UserHandler extends DatabaseHandler {
         if (user == null) {
             throw new SQLException("User not found");
         }
+        //CWE-837
+        if (user.getRole() == Role.ADMIN && role != Role.ADMIN && countAdmins() <= 1) {
+            throw new SQLException("Cannot change role of last remaining admin");
+        }
         String updateUserRoleQuery = "UPDATE user SET role = ? WHERE username = ?";
         // CWE-459: Incomplete Cleanup
         try (PreparedStatement preparedStatement = this.connection.prepareStatement(updateUserRoleQuery)) {
@@ -320,6 +324,10 @@ public class UserHandler extends DatabaseHandler {
         if (user == null) {
             throw new SQLException("User not found");
         }
+        //CWE-837
+        if (user.getRole() == Role.ADMIN && countAdmins() <= 1) {
+            throw new SQLException("Can't delete last remaining admin");
+        }
         String deleteUserQuery = "DELETE FROM user WHERE username = ?";
         // CWE-459: Incomplete Cleanup
         try (PreparedStatement preparedStatement = this.connection.prepareStatement(deleteUserQuery)) {
@@ -331,6 +339,26 @@ public class UserHandler extends DatabaseHandler {
         } catch (SQLException e) {
             // CWE-778: Insufficient Logging
             logger.severe("Error updating user role: " + e.getMessage());
+        }
+    }
+    /**
+     * CWE-307 Needed to check if the user has reached the max login attempts
+     * @return if login attempts have reached the max attempts allowed
+     */
+    public boolean isLockedOut() {
+        return loginAttempts >= MAX_FAILED_ATTEMPTS;
+    }
+
+    /**
+     * CWE-837 Improper enforcement of a singular, unique action.
+     * Basically we want to make sure that we don't invoke a deleteAdmin on the last admin in the system.
+     */
+    private synchronized int countAdmins() throws SQLException {
+        String query = "SELECT COUNT(*) FROM user WHERE role = ?";
+        try (PreparedStatement ps = this.connection.prepareStatement(query)) {
+            ps.setString(1, Role.ADMIN.toString());
+            ps.setQueryTimeout(30);
+            return ps.executeQuery().getInt(1);
         }
     }
 
