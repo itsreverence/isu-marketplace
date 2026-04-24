@@ -129,6 +129,7 @@ public class UserHandler extends DatabaseHandler {
                 registerAttempts++;
                 return null;
             }
+            // CWE-334: Small Space of Random Values
             UUID id = UUID.randomUUID();
             String passwordHash = BCrypt.withDefaults().hashToString(12, password.toCharArray());
             Role userRole = isAdmin ? Role.ADMIN : Role.MEMBER;

@@ -69,6 +69,7 @@ public class InputController {
                                                                                          // an invalid operation
     private static final String MENU_LINES = "--------------------"; // lines to separate menu content
 
+    //CWE-209: Generation of Error Message Containing Sensitive Information - Error messages contain enough information to be useful without leaking information
     private static final String INVALID_LOGIN = "Login failed, please try again."; // prompt for when user login fails
 
     private static final String INVALID_MENU_CHOICE = "Invalid choice, please try again."; // prompt for when user enters invalid menu choice integer
@@ -83,7 +84,7 @@ public class InputController {
 
     private static final String INVALID_LISTING_DESCRIPTION = "Listing description cannot be empty, please try again."; // prompt for when user enters empty listing description
 
-    private static final String INVALID_LISTING_PRICE = "Listing price cannot be negative, please try again."; // prompt for when user enters invalid listing price
+    private static final String INVALID_LISTING_PRICE = "Listing price was invalid, please try again."; // prompt for when user enters invalid listing price
 
     public InputController() {
         this.logger = initLogger();
@@ -157,6 +158,7 @@ public class InputController {
         while (true) {
             String username = InputValidation.readString(USERNAME_PROMPT, INVALID_USERNAME);
             String password = InputValidation.readString(PASSWORD_PROMPT, INVALID_PASSWORD);
+            // CWE-842: Placement of User into Incorrect Group | Users are automatically registered with the MEMBER role, as false is passed to the register method
             User user = userHandler.register(username, password, false);
             if (user != null) {
                 System.out.println("\nWelcome, " + user.getUsername() + "!");
@@ -557,6 +559,7 @@ public class InputController {
             return;
         }
         // Ensure we are not buying our own
+        // CWE-283: Unverified Ownership
         if (listing.getUserId().equals(user.getId())) {
             // CWE-779: Logging of Excessive Data
             logger.fine(user.getUsername() + " attempted to buy listing " + listing.getId() + " which they own");
@@ -593,13 +596,16 @@ public class InputController {
         // Ensure listing exists
         if (listing == null) {
             // CWE-779: Logging of Excessive Data
+            //CWE-209: Generation of Error Message Containing Sensitive Information 
             logger.fine(user.getUsername() + " attempted to delete listing " + listingId + " which does not exist");
             System.out.println("Invalid listing.");
             return;
         }
         // Ensure we are deleting our own
+        // CWE-283: Unverified Ownership
         if (!listing.getUserId().equals(user.getId())) {
             // CWE-778: Insufficient Logging
+            //CWE-209: Generation of Error Message Containing Sensitive Information 
             logger.warning(user.getUsername() + " attempted to delete listing " + listing.getId() + " which they don't own");
             System.out.println("Invalid listing.");
             return;
