@@ -115,6 +115,11 @@ public class Listing {
         return temp.toString();
     }
 
+    /**
+     * Private helper method to convert a float into a string-formatted money
+     * @param price The float representing money
+     * @return A string form of a float ($x.xx)
+     */
     private static String toMoney(float price) {
         return String.format("$%.2f", price);
     }
