@@ -109,6 +109,9 @@ public class InputController {
         switch (choice) {
             case 1:
                 user = login(userHandler);
+                if (user == null) {
+                    return null;
+                }
                 break;
             case 2:
                 user = register(userHandler);
@@ -135,7 +138,8 @@ public class InputController {
             // CWE-307 Need to check if the user has reached the login attempts.
             if (userHandler.isLockedOut()) {
                 System.out.println("Too many failed login attempts. Exiting.");
-                System.exit(0);
+
+                return null;
             }
             // if .login returns null, login failed.
             if (user == null) {
@@ -249,7 +253,10 @@ public class InputController {
      * @throws SQLException if there is an error accessing the database
      */
     public boolean adminMenu(User user, ListingHandler listingHandler, UserHandler userHandler) throws SQLException {
-        requireAdmin(user); //CWE-306
+        // CWE-306
+        if (!requireAdmin(user)) {
+            return false;
+        }
         System.out.println("\n" + MENU_LINES);
         System.out.println("1.) Your Listings");
         System.out.println("2.) New Listing");
@@ -312,7 +319,10 @@ public class InputController {
      * @throws SQLException if there is an error accessing the database
      */
     private void manageUsers(UserHandler userHandler, ListingHandler listingHandler, User user) throws SQLException {
-        requireAdmin(user); //CWE-306
+        // CWE-306
+        if (!requireAdmin(user)) {
+            return;
+        }
         System.out.println("\n" + MENU_LINES);
         System.out.println("1.) View Users");
         System.out.println("2.) Update User Role");
@@ -350,7 +360,10 @@ public class InputController {
      * @throws SQLException if there is an error accessing the database
      */
     private void manageListings(ListingHandler listingHandler, UserHandler userHandler, User user) throws SQLException {
-        requireAdmin(user); //CWE-306
+        // CWE-306
+        if (!requireAdmin(user)) {
+            return;
+        }
         System.out.println("1.) Delete Listing");
         System.out.println("2.) Help");
         System.out.println("3.) Back");
@@ -387,7 +400,10 @@ public class InputController {
      * @throws SQLException if there is an error accessing the database
      */
     private void deleteListing(ListingHandler listingHandler, UserHandler userHandler, User user) throws SQLException {
-        requireAdmin(user); //CWE-306
+        // CWE-306
+        if (!requireAdmin(user)) {
+            return;
+        }
         String listingId = InputValidation.readString(REMOVE_LISTING_PROMPT, INVALID_LISTING_ID);
         // CWE-229: Improper Handling of Values - validate UUID format before parsing
         UUID listingUUID;
@@ -444,7 +460,10 @@ public class InputController {
      * @throws SQLException if there is an error accessing the database
      */
     private void deleteUser(UserHandler userHandler, ListingHandler listingHandler, User user) throws SQLException {
-        requireAdmin(user); //CWE-306
+        // CWE-306
+        if (!requireAdmin(user)) {
+            return;
+        }
         String username = InputValidation.readString(DELETE_USER_USERNAME_PROMPT, INVALID_USERNAME);
         User userToDelete = userHandler.getUser(username);
         if (userToDelete == null || userToDelete.getRole().equals(Role.ADMIN) || user.getId().equals(userToDelete.getId())) {
@@ -686,12 +705,13 @@ public class InputController {
      * CWE-306 Need to check for critical functions if the user is an admin
      * @param user
      */
-    private void requireAdmin(User user) {
+    private boolean requireAdmin(User user) {
         if (user == null || user.getRole() != Role.ADMIN) {
             logger.warning("Unauthorized admin access attempt");
             System.out.println("Access denied.");
-            System.exit(0);
+            return false;
         }
+        return true;
     }
 
     /**
