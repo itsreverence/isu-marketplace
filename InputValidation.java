@@ -2,7 +2,6 @@ import java.io.File;
 import java.io.IOException;
 import java.text.Normalizer;
 import java.text.Normalizer.Form;
-import java.util.InputMismatchException;
 import java.util.Scanner;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;

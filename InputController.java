@@ -529,6 +529,12 @@ public class InputController {
         bulkPrintList(listings);
     }
 
+    /**
+     * Prompts the user to select an option from the browse listings menu
+     * 
+     * @param listingHandler
+     * @throws SQLException
+     */
     private void handleBrowseMenu(ListingHandler listingHandler) throws SQLException{
         System.out.println(MENU_LINES);
         System.out.println("1.) Browse all listings");

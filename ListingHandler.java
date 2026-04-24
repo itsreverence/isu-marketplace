@@ -253,7 +253,9 @@ public class ListingHandler extends DatabaseHandler {
     * Search for listings by title
     * 
     * @param listingTitle the name of the listing 
+    * @throws SQLException if there is an error connecting to the database
     * @throws IllegalArgumentException if the listingTitle is not correct format
+    * @return a list of listings with the given title
     */
     public synchronized List<Listing> searchListingsByTitle(String listingTitle) throws SQLException {
         if (listingTitle == null || listingTitle.isEmpty()) {
