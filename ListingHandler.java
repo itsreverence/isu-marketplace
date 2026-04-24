@@ -290,10 +290,11 @@ public class ListingHandler extends DatabaseHandler {
     private static final int MAX_LISTING_PER_USER = 10;
 
     /**
-     * CWE-770 Prevent unbounded resource allocation per user
-     * @param userId
-     * @return
-     * @throws SQLException
+     * CWE-770: Allocation of Resources Without Limits or Throttling
+     * Check to see if the user has reached the max amount of item listings
+     * @param user the current user creating the listing
+     * @return if the user is allowed to make a listing
+     * @throws SQLException if an error occurs when accessing data from the SQL database
      */
     private synchronized boolean isListingLimitReached(User user) throws SQLException {
         String query = "SELECT COUNT(*) FROM listing WHERE userId = ?";

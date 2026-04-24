@@ -94,7 +94,12 @@ public class UserHandler extends DatabaseHandler {
         return null;
     }
 
-    //CWE-117
+    /**
+     * CWE-117: Improper Output Neutralization for Logs
+     * Sanitizes the input data from a user, assume that user input is never sanitized.
+     * @param input the string input before sanitization
+     * @return the sanitized version of the string input
+     */
     private String sanitizeForLog(String input) {
         if (input == null) {
             return "(null)";
@@ -341,8 +346,10 @@ public class UserHandler extends DatabaseHandler {
             logger.severe("Error updating user role: " + e.getMessage());
         }
     }
+
     /**
-     * CWE-307 Needed to check if the user has reached the max login attempts
+     * CWE-307: Improper Restriction of Excessive Authentication Attempts
+     * Checks to see if a user has reached the max amount of login attempts.
      * @return if login attempts have reached the max attempts allowed
      */
     public boolean isLockedOut() {
@@ -351,7 +358,9 @@ public class UserHandler extends DatabaseHandler {
 
     /**
      * CWE-837 Improper enforcement of a singular, unique action.
-     * Basically we want to make sure that we don't invoke a deleteAdmin on the last admin in the system.
+     * Returns the amount of admin accounts in the current database
+     * @return the amount of admin accounts in the database
+     * @throws SQLException if there is an error retrieving the amount of admin accounts in the database.
      */
     private synchronized int countAdmins() throws SQLException {
         String query = "SELECT COUNT(*) FROM user WHERE role = ?";

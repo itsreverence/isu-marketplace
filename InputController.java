@@ -708,8 +708,10 @@ public class InputController {
     }
     
     /**
-     * CWE-306 Need to check for critical functions if the user is an admin
-     * @param user
+     * CWE-306: Missing Authentication for Critical Function
+     * Checks to see if the user is an admin account
+     * @param user the current user trying to access an admin function
+     * @return if the user is an admin account
      */
     private boolean requireAdmin(User user) {
         if (user == null || user.getRole() != Role.ADMIN) {
