@@ -443,11 +443,13 @@ public class InputController {
         switch (choice) {
             case 1:
                 userHandler.updateUserRole(username, Role.MEMBER);
+                System.out.println(username + " was updated to MEMBER role.");
                 // CWE-778: Insufficient Logging
                 logger.info(username + " was updated to member");
                 break;
             case 2:
                 userHandler.updateUserRole(username, Role.ADMIN);
+                System.out.println(username + " was updated to ADMIN role.");
                 // CWE-778: Insufficient Logging
                 logger.info(username + " was updated to admin");
                 break;
@@ -524,7 +526,7 @@ public class InputController {
      */
     private void browseListings(ListingHandler listingHandler) {
         List<Listing> listings = listingHandler.getListings();
-        System.out.println("There are " + listings.size() + "listing(s) total.");
+        System.out.println("There are " + listings.size() + " listing(s) total.");
         bulkPrintList(listings);
     }
 
@@ -657,10 +659,12 @@ public class InputController {
         File file = new File(filePath);
         // CWE-459: Incomplete Cleanup
         try (Scanner fileScanner = new Scanner(file)) {
+            System.out.println("\n" + MENU_LINES);
             while (fileScanner.hasNextLine()) {
                 String line = fileScanner.nextLine();
                 System.out.println(line);
             }
+            System.out.println(MENU_LINES + "\n");
         } catch (FileNotFoundException e) {
             // CWE-778: Insufficient Logging
             logger.severe("Error displaying help file: " + e.getMessage());
