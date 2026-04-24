@@ -339,7 +339,7 @@ public class InputController {
                 viewUsers(userHandler);
                 break;
             case 2:
-                updateUserRole(userHandler);
+                updateUserRole(userHandler, user);
                 break;
             case 3:
                 deleteUser(userHandler, listingHandler, user);
@@ -365,9 +365,11 @@ public class InputController {
         if (!requireAdmin(user)) {
             return;
         }
+        System.out.println("\n" + MENU_LINES);
         System.out.println("1.) Delete Listing");
         System.out.println("2.) Help");
         System.out.println("3.) Back");
+        System.out.println(MENU_LINES + "\n");
 
         int choice = InputValidation.readInt(INPUT_PROMPT, INVALID_MENU_CHOICE, 3);
         switch (choice) {
@@ -434,8 +436,12 @@ public class InputController {
      * @param userHandler the user handler to use
      * @throws SQLException if there is an error accessing the database
      */
-    private void updateUserRole(UserHandler userHandler) throws SQLException {
+    private void updateUserRole(UserHandler userHandler, User user) throws SQLException {
         String username = InputValidation.readString(UPDATE_USER_ROLE_USERNAME_PROMPT, INVALID_USERNAME);
+        if (username.equals(user.getUsername())) {
+            System.out.println("You cannot update your own role.");
+            return;
+        }
         System.out.println("1.) Member");
         System.out.println("2.) Admin");
         int choice = InputValidation.readInt(UPDATE_USER_ROLE_PROMPT, INVALID_MENU_CHOICE, 2);
