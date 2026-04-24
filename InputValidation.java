@@ -62,7 +62,12 @@ public class InputValidation {
         while (true) {
             System.out.print(askingArgument);
             try {
-                int choice = SCANNER.nextInt();
+                String choiceInput = SCANNER.nextLine().trim();
+                if(choiceInput.isBlank()) {
+                    System.out.println(failedString);
+                    continue;
+                }
+                int choice = Integer.parseInt(choiceInput);
                 if (choice < 1 || choice > maxVal) {
                     // CWE-779: Logging of Excessive Data
                     logger.fine("Invalid int input: " + choice);
@@ -71,13 +76,11 @@ public class InputValidation {
                     // if we get here, we have a good number!
                     return choice;
                 }
-            } catch (InputMismatchException e) {
+            } catch (NumberFormatException e) {
                 // CWE-778: Insufficient Logging
                 logger.fine("Error reading int: " + e.getMessage());
                 System.out.println(failedString);
-            } finally {
-                SCANNER.nextLine(); // consume
-            }
+            } 
         }
     }
 
@@ -93,7 +96,12 @@ public class InputValidation {
         while (true) {
             System.out.print(askingArgument);
             try {
-                float floatResult = SCANNER.nextFloat();
+                String floatInput = SCANNER.nextLine().trim();
+                if(floatInput.isBlank()) {
+                    System.out.println(failedString);
+                    continue;
+                }
+                float floatResult = Float.parseFloat(floatInput);
                 if (floatResult < 0) {
                     // CWE-779: Logging of Excessive Data
                     logger.fine("Invalid float input: " + floatResult);
@@ -101,13 +109,11 @@ public class InputValidation {
                 } else {
                     return floatResult;
                 }
-            } catch (InputMismatchException e) {
+            } catch (NumberFormatException e) {
                 // CWE-778: Insufficient Logging
                 logger.fine("Error reading float: " + e.getMessage());
                 System.out.println(failedString);
-            } finally {
-                SCANNER.nextLine(); // consume
-            }
+            } 
         }
     }
 

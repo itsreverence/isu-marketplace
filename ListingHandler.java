@@ -120,6 +120,7 @@ public class ListingHandler extends DatabaseHandler {
         String createListingQuery = "INSERT INTO listing (id, userId, title, description, price) VALUES (?, ?, ?, ?, ?)";
         // CWE-459: Incomplete Cleanup
         try (PreparedStatement preparedStatement = this.connection.prepareStatement(createListingQuery)) {
+            // CWE-334: Small Space of Random Values
             UUID id = UUID.randomUUID();
             preparedStatement.setString(1, id.toString());
             preparedStatement.setString(2, user.getId().toString());
