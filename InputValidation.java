@@ -33,7 +33,7 @@ public class InputValidation {
         String stringResult = null;
         // CWE-1095: Loop Condition Value Update within the Loop
         while (true) {
-            System.out.println(askingArgument);
+            System.out.print(askingArgument);
             stringResult = SCANNER.nextLine();
 
             // normalizeString;
@@ -60,7 +60,7 @@ public class InputValidation {
     public static int readInt(String askingArgument, String failedString, int maxVal) {
         // CWE-1095: Loop Condition Value Update within the Loop
         while (true) {
-            System.out.println(askingArgument);
+            System.out.print(askingArgument);
             try {
                 int choice = SCANNER.nextInt();
                 if (choice < 1 || choice > maxVal) {
@@ -91,7 +91,7 @@ public class InputValidation {
     public static float readFloat(String askingArgument, String failedString) {
         // CWE-1095: Loop Condition Value Update within the Loop
         while (true) {
-            System.out.println(askingArgument);
+            System.out.print(askingArgument);
             try {
                 float floatResult = SCANNER.nextFloat();
                 if (floatResult < 0) {

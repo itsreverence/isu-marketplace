@@ -41,7 +41,7 @@ public class UserHandler extends DatabaseHandler {
     }
 
     /**
-     * Create the table if it doesn't exist
+     * Create the table if it doesn't exist. Additionally, if it didn't exist, adds admin accounts
      */
     @Override
     public void createTable() {
@@ -50,6 +50,13 @@ public class UserHandler extends DatabaseHandler {
             statement.setQueryTimeout(30);
             statement.executeUpdate(
                     "create table if not exists user (id string, username string, passwordHash string, role string)");
+
+            // check if the table is empty before adding admins
+            if (getUsers().isEmpty()) {
+                // Adds admins for testing and demonstrations only.
+                register("admin1", "admin", true);
+                register("admin2", "admin", true);
+            }
             // CWE-778: Insufficient Logging
             logger.info("User table created");
         } catch (SQLException e) {
@@ -102,7 +109,7 @@ public class UserHandler extends DatabaseHandler {
      * @param password The password of the user
      * @return The new user
      */
-    public synchronized User register(String username, String password) {
+    public synchronized User register(String username, String password, boolean isAdmin) {
         // CWE-779: Logging of Excessive Data
         if (registerAttempts >= NO_LOG_REGISTER_ATTEMPTS) {
             logger.warning("User " + sanitizeForLog(username) + " has failed to register " + registerAttempts + " times");
@@ -124,7 +131,7 @@ public class UserHandler extends DatabaseHandler {
             }
             UUID id = UUID.randomUUID();
             String passwordHash = BCrypt.withDefaults().hashToString(12, password.toCharArray());
-            Role userRole = Role.MEMBER; // user level role
+            Role userRole = isAdmin ? Role.ADMIN : Role.MEMBER;
             insertUserPreparedStatement.setString(1, id.toString());
             insertUserPreparedStatement.setString(2, username);
             insertUserPreparedStatement.setString(3, passwordHash);
@@ -244,6 +251,34 @@ public class UserHandler extends DatabaseHandler {
             logger.severe("Error getting user: " + e.getMessage());
         }
         return user;
+    }
+
+     /**
+     * Get a user by ID
+     * 
+     * @param id The ID of the user
+     * @return The user
+     */
+    public synchronized User getUser(UUID id) {
+        User user = null;
+        String stringID = id.toString();
+        String getUserQuery = "SELECT * FROM user where id = ?";
+        // CWE-459: Incomplete Cleanup
+        try (PreparedStatement preparedStatement = this.connection.prepareStatement(getUserQuery)) {
+            preparedStatement.setString(1, stringID);
+            preparedStatement.setQueryTimeout(30);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            if (resultSet.next()) {
+                String username = resultSet.getString("username");
+                Role role = Role.valueOf(resultSet.getString("role"));
+                user = new User(id, username, role);
+            }
+        } catch (SQLException e) {
+            // CWE-778: Insufficient Logging
+            logger.severe("Error getting user: " + e.getMessage());
+        }
+        return user;
+
     }
 
     /**
